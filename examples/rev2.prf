@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- reverse + polynomial interpretation -->
+
+<proof
+  xmlns="urn:rainbow.proof.format"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:rainbow.proof.format http://color.inria.fr/proof.xsd">
+  <trs_rev>
+    <proof>
+      <manna_ness>
+	<order>
+	  <poly_int>
+	    <mapping>
+	      <fun>a</fun>
+	      <polynomial>
+		<monomial>
+		  <coef>1</coef>
+		  <var>1</var>
+		</monomial>
+		<monomial>
+		  <coef>1</coef>
+		  <var>0</var>
+		</monomial>
+	      </polynomial>
+	    </mapping>
+	    <mapping>
+	      <fun>b</fun>
+	      <polynomial>
+		<monomial>
+		  <coef>1</coef>
+		  <var>1</var>
+		</monomial>
+	      </polynomial>
+	    </mapping>
+	  </poly_int>
+	</order>
+	<proof>
+	  <trivial/>
+	</proof>
+      </manna_ness>
+    </proof>
+  </trs_rev>
+</proof>

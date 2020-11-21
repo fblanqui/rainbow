@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2010-11-10
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h] file.[xml|cpf]"
+}
+
+help () {
+  cat <<EOF
+Convert file.cpf into file.v and check file.v using Coq.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1; then usage; exit 1; fi
+
+case $1 in
+*.xml) f=${1%.xml};;
+*.cpf) f=${1%.cpf};;
+*) echo "$f: unknown file type"; exit 1;;
+esac
+
+`dirname $0`/../convert -icpf $1 -ocoq > $f.v || rm -f $f.v
+if test -f $f.v; then coqc -dont-load-proofs $f.v; fi

@@ -1,0 +1,26 @@
+main = WST07Heuristic
+
+# TRS Standard
+trs = TRSToQTRS:qtrs
+gtrs = GTRSToQTRS:qtrs
+
+qtrs = QTRSDependencyPairs: Repeat(0, *, First(defaults, redPair))
+
+depgraph = QDPDependencyGraph:Maybe(QDPNonSCC)
+
+
+defaults = First( \
+                 depgraph, \
+                 Timer(500, QDPMNOC[TestDepth = 2]), \
+                 QDPUsableRules[BeComplete = True, UseApplicativeCeRules = False], \
+                 QDPQReduction
+                )
+
+ 
+redPair = Any( \
+               Timer(20000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 3, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+               Timer(20000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+		Timer(20000, QDPReductionPair[Order = MATRO[Engine = MINISAT, SatConverter=PLAIN [UseShifts=True, UseBinaryShifts=False, SumType=DUAL_COMB], Range=16, Denominator=4, Rational=True, Type=COLLAPSINGDPTUPLE[Size=2]]]), \
+	         Timer(20000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 2, Dimension = 3, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]) \
+             )
+

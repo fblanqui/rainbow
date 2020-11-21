@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- polynomial interpretation -->
+
+<proof
+   xmlns="urn:rainbow.proof.format"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:rainbow.proof.format http://color.inria.fr/proof.xsd">
+  <manna_ness>
+    <order>
+      <poly_int>
+	<mapping>
+          <fun>zero</fun>
+          <polynomial> <!-- 1 -->
+            <monomial>
+              <coef>1</coef>
+            </monomial>
+          </polynomial>
+	</mapping>
+	<mapping>
+          <fun>succ</fun>
+          <polynomial> <!-- 1.x_1 + 1 -->
+            <monomial>
+              <coef>1</coef>
+              <var>1</var>
+            </monomial>
+            <monomial>
+              <coef>1</coef>
+              <var>0</var>
+            </monomial>
+          </polynomial>
+	</mapping>
+	<mapping>
+          <fun>plus</fun>
+          <polynomial> <!-- 2.x_1 + 1.x_2 + 2 -->
+            <monomial>
+              <coef>2</coef>
+              <var>1</var>
+              <var>0</var>
+            </monomial>
+            <monomial>
+              <coef>1</coef>
+              <var>0</var>
+              <var>1</var>
+            </monomial>
+            <monomial>
+              <coef>2</coef>
+              <var>0</var>
+              <var>0</var>
+            </monomial>
+          </polynomial>
+	</mapping>
+      </poly_int>
+    </order>
+    <proof>
+      <trivial/>
+    </proof>
+  </manna_ness>
+</proof>

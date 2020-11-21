@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- dp transformation + marked symbols
++ matrix interpretations & scc decomposition (0 scc) -->
+
+<proof
+   xmlns="urn:rainbow.proof.format"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:rainbow.proof.format http://color.inria.fr/proof.xsd">
+  <dp>
+    <proof>
+      <mark_symbols>
+	<proof>
+	  <manna_ness>
+	    <order>
+	      <matrix_int>
+		<dimension>1</dimension>
+		<mi_map>
+		  <mapping>
+		    <fun><int_mark>b</int_mark></fun>
+		    <mi_fun>
+                      <const>
+			<velem>0</velem>
+                      </const>
+                      <arg>
+			<row>
+			  <velem>1</velem>
+			</row>
+                      </arg>
+		    </mi_fun>
+		  </mapping>
+		  <mapping>
+		    <fun><int_mark>a</int_mark></fun>
+		    <mi_fun>
+                      <const>
+			<velem>2</velem>
+                      </const>
+                      <arg>
+			<row>
+			  <velem>2</velem>
+			</row>
+                      </arg>
+		    </mi_fun>
+		  </mapping>
+		  <mapping>
+		    <fun><hd_mark>b</hd_mark></fun>
+		    <mi_fun>
+                      <const>
+			<velem>0</velem>
+                      </const>
+                      <arg>
+			<row>
+			  <velem>1</velem>
+			</row>
+                      </arg>
+		    </mi_fun>
+		  </mapping>
+		  <mapping>
+		    <fun><hd_mark>a</hd_mark></fun>
+		    <mi_fun>
+                      <const>
+			<velem>2</velem>
+                      </const>
+                      <arg>
+			<row>
+			  <velem>2</velem>
+			</row>
+                      </arg>
+		    </mi_fun>
+		  </mapping>
+		</mi_map>
+              </matrix_int>
+	    </order>
+	    <proof>
+              <scc_decomp>
+		<graph>
+		  <hde_marked/>
+		</graph>
+              </scc_decomp>
+	    </proof>
+	  </manna_ness>
+	</proof>
+      </mark_symbols>
+    </proof>
+  </dp>
+</proof>

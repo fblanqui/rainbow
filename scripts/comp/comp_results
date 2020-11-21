@@ -1,0 +1,16 @@
+#!/bin/sh
+
+sed \
+    -e 's|<tr.*>||' \
+    -e 's|</tr>||' \
+    -e 's|<td.*>\(.*\)</a></td>| \1|' \
+    -e 's|<td.*ACCEPT.*>| ACCEPT|' \
+    -e 's|<td.*REJECT.*>| REJECT|' \
+    -e 's|<td.*TIMEOUT.*>| TIMEOUT|' \
+    -e 's|</td>||' \
+    -e 's|<a.*>||' \
+    -e 's|</a>||' \
+| sed -e '/tpdb.*T$/N;s|\n| |' \
+| sed -e '/tpdb.*T$/N;s|\n| |' \
+| sed -e '/tpdb.*T$/N;s|\n| |'
+

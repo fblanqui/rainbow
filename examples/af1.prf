@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- dp transformation + argument filtering + polynomial interpretation -->
+
+<proof
+   xmlns="urn:rainbow.proof.format"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:rainbow.proof.format http://color.inria.fr/proof.xsd">
+  <dp>
+    <proof>
+      <arg_filter>
+	<def>
+	  <mapping><fun>zero</fun></mapping>
+	  <mapping><fun>succ</fun></mapping>
+	  <mapping><fun>minus</fun><bool><true/><false/></bool></mapping>
+	  <mapping><fun>quot</fun></mapping>
+	</def>
+	<proof>
+	  <manna_ness>
+	    <order>
+	      <poly_int>
+		<mapping>
+		  <fun>zero</fun>
+		  <polynomial> <!-- 0 -->
+		    <monomial>
+		      <coef>0</coef>
+		    </monomial>
+		  </polynomial>
+		</mapping>
+		<mapping>
+		  <fun>succ</fun>
+		  <polynomial> <!-- 1.x_1 + 2 -->
+		    <monomial>
+		      <coef>1</coef>
+		      <var>1</var>
+		    </monomial>
+		    <monomial>
+		      <coef>2</coef>
+		      <var>0</var>
+		    </monomial>
+		  </polynomial>
+		</mapping>
+		<mapping>
+		  <fun>minus</fun>
+		  <polynomial> <!-- 1.x_1 + 1 -->
+		    <monomial>
+		      <coef>1</coef>
+		      <var>1</var>
+		    </monomial>
+		    <monomial>
+		      <coef>1</coef>
+		      <var>0</var>
+		    </monomial>
+		  </polynomial>
+		</mapping>
+		<mapping>
+		  <fun>quot</fun>
+		  <polynomial> <!-- 1.x_1.x_2 + 1.x_1 + 1.x_2 -->
+		    <monomial>
+		      <coef>1</coef>
+		      <var>1</var>
+		      <var>1</var>
+		    </monomial>
+		    <monomial>
+		      <coef>1</coef>
+		      <var>1</var>
+		      <var>0</var>
+		    </monomial>
+		    <monomial>
+		      <coef>1</coef>
+		      <var>0</var>
+		      <var>1</var>
+		    </monomial>
+		  </polynomial>
+		</mapping>
+	      </poly_int>
+	    </order>
+	    <proof>
+	      <trivial/>
+	    </proof>
+	  </manna_ness>
+	</proof>
+      </arg_filter>
+    </proof>
+  </dp>
+</proof>

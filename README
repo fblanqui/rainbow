@@ -1,0 +1,104 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+
+Rainbow is available on the CoLoR web page http://color.inria.fr/.
+
+The aim of Rainbow is to check the correctness of termination
+certificates for various existing formats. The certification is
+currently done by generating a Coq file based on the CoLoR
+library. Coq is a powerful proof assistant and checker (see
+http://coq.inria.fr) and CoLoR is a Coq library on rewriting and
+termination (see http://color.inria.fr).
+
+LICENSE: this file describes the license governing this tool.
+COPYRIGHTS: this file describes the copyrights holders.
+INSTALL: this file describes a compilation procedure.
+THANKS: thanks to various people for their comments or help.
+
+TPDB is the Termination Problem Data Base available at
+http://dev.aspsimon.org/projects/termcomp/downloads/.
+
+The main program is "convert". See INSTALL to build it. It allows you
+to convert one problem/proof file from one format to another one. Do
+"convert -h" to learn how to use it. We also provide some useful
+scripts in the scripts directory:
+
+- check_coq file.xml: convert a CPF file.xml into file.v and check it with coqc
+
+- rename_tpdb: rename TPDB/CPF files to get valid Coq filenames
+
+Various examples are provided in the directory examples/. Do "[g]make
+examples" to compile them.
+
+For checking proofs with Coq, make sure that your ~/.coqrc file
+contains the following line, where <dir> is the directory where CoLoR
+files have been compiled:
+
+  Add Rec LoadPath "<dir>" as CoLoR.
+
+Command for checking a CPF file:
+
+convert -icpf file.cpf -ocoq > file.v && coqc -dont-load-proofs file.v
+
+Or:
+
+check_coq file.xml
+
+-------------------------------------------------------
+TPDB termination problems supported by Rainbow
+-------------------------------------------------------
+
+- TRS standard
+- TRS relative
+- TRS modulo equations l=r with Var(l)=Var(r) (e.g. associativity
+  and commutativity) are translated into TRS relative
+- SRS standard
+- SRS relative
+
+-------------------------------------------------------
+Proof techniques supported by Rainbow
+-------------------------------------------------------
+
+- dependency pair transformation with or without marked symbols
+- dependency graph decomposition based on unification
+- polynomial interpretation
+- matrix interpretation (standard, arctic and below-zero)
+- argument filtering
+- SRS or unary TRS reversal
+- RPO
+- loops
+- root labelling
+- flat context closure
+
+See grammar/proof.xsd for details.
+
+-------------------------------------------------------
+Termination problems formats supported by Rainbow
+-------------------------------------------------------
+
+- the old TPDB format grammar/tpdb.html (file extensions .trs and .srs)
+- the new TPDB format grammar/xtc.xsd (file extension .xtc)
+- its own format grammar/problem.xsd (file extension .pb)
+
+-------------------------------------------------------
+Termination certificates formats supported by Rainbow
+-------------------------------------------------------
+
+- the new common format grammar/cpf.xsd (file extension .cpf)
+- its own format grammar/proof.xsd (file extension .prf)
+
+-------------------------------------------------------
+Translation of TPDB variable names into CoLoR
+-------------------------------------------------------
+
+A variable in a TPDB rule (resp. equation) [LHS -> RHS | cond1, ...,
+condn] (resp. [LHS == RHS]) is translated in CoLoR into a natural
+number that is its leftmost position (starting from 0) in the list of
+variables, computed in a depth-first manner, of the term
+F(LHS,cond1,..,condn,RHS) (resp. F(LHS,RHS)) where F is some arbitrary
+new symbol of the appropriate arity.
+
+For instance, the rule f(y,y,x)->g(x,h(y)) is translated to
+f(0,0,2)->g(2,h(0)) since the list of variables of the rule is
+[y;y;x;x;y]. And the dependency pairs computed in CoLoR are
+f(0,0,2)->g(2,h(0)) and f(0,0,2)->h(0).

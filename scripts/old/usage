@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-01-22
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h|-l] command ..."
+}
+
+help () {
+  cat <<EOF
+Provide help on Rainbow scripts.
+
+Options:
+-h Provide this help and exit
+-l Give the list of scripts
+EOF
+}
+
+dir=`dirname $0`
+cd $dir
+
+l=`find . -type f -a -executable -a ! -name \*~ -a ! -name \*.in -a ! -name \*.old -a ! -name \*.template | sed -e 's|./||' | sort`
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+-l) echo $l; exit 0;;
+esac
+
+if test $# -ne 0
+then
+    l=$*
+fi
+
+for f in $l
+do
+  echo '---------------------------------------------------------------------'
+  $dir/$f -h
+done

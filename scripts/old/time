@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2006-05-31
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] time_file command ..."; }
+
+help () {
+  cat <<EOF
+Register the time taken by a command in time_file.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -lt 2; then args; fi
+
+time_file=$1
+shift
+
+tmp=/tmp/time$$
+
+/usr/bin/time --quiet -f %e -o $tmp $*
+status=$?
+
+tail -n 1 $tmp > $time_file
+
+rm -f $tmp
+exit $status

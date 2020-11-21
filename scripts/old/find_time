@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-03-11
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h] suffix [time]"
+}
+
+help () {
+  cat <<EOF
+List the TPDB files whose verification took more than time seconds.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -lt 1 -o $# -gt 2
+then
+  usage; exit 1
+fi
+
+suffix=$1
+time=${2:-60}
+
+awk "/Command/{next}{if(\$1>$time){print FILENAME};nextfile}" `find . -name \*.$suffix`

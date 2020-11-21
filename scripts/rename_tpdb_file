@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2008-11-11
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h] [-cpf|-xtc] filename"
+}
+
+help () {
+  cat <<EOF
+Provide a valid Coq module name for a filename:
+1) . and - are replaced by _,
+2) # is replaced by P,
+3) filenames starting with [0-9] are prefixed with P.
+
+Options:
+-h   Provide this help and exit
+-cpf Rename .xml file extension into .cpf
+-xtc Rename .xml file extension into .xtc
+EOF
+}
+
+newext=xml
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+-xtc) newext=xtc; shift;;
+-cpf) newext=cpf; shift;;
+esac
+
+if test $# -ne 1; then usage; exit 1; fi
+
+f=$1
+
+case $f in
+./*) prefix='./';;
+*) prefix='';;
+esac
+
+d=`dirname $f`
+b=`basename $f`
+
+case $b in
+*.trs) f=${b%.trs}; ext=trs;;
+*.srs) f=${b%.srs}; ext=srs;;
+*.xml) f=${b%.xml}; ext=$newext;;
+*) echo "$f: unknown file type"; exit 1;;
+esac
+
+g=`echo $f | sed -e 's|\.|_|g' -e 's|#|P|' -e 's|-|_|g'`
+
+if `echo $g | egrep -q '^[0-9].*'`
+then
+  g=P$g
+fi
+
+if test $d = '.'
+then
+  echo $prefix$g.$ext
+else
+  echo $d/$g.$ext
+fi

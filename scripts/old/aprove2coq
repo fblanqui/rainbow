@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-10-23
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-saxon saxon.jar] [-ext file_extension] [-xsl aprove2ext.xsl] [-coq ext2coq] file.aprove"; }
+
+help () {
+  cat <<EOF
+Produce a file.v from a file.aprove using aprove2ext.xsl and ext2coq.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+ext2coq=cpf2coq
+
+while true
+do
+  case "$1" in
+  -h) usage; echo; help; exit 0;;
+  -saxon) if test $# -lt 2; then args; else saxon=" -saxon $2"; shift 2; fi;;
+  -xsl) if test $# -lt 2; then args; else xsl=" -xsl $2"; shift 2; fi;;
+  -ext) if test $# -lt 2; then args; else ext=" -ext $2"; shift 2; fi;;
+  -coq) if test $# -lt 2; then args; else ext2coq=$2; shift 2; fi;;
+  *) break;;
+  esac
+done
+
+if test $# -ne 1; then args; fi
+
+case $1 in
+*.aprove) base=${1%.aprove};;
+*) echo 'error: unknown file type'; usage; exit 1
+esac
+
+aprove2ext$saxon$ext$xsl $base.aprove && $ext2coq $base.cpf

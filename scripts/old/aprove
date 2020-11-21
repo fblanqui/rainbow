@@ -1,0 +1,118 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2008-11-07
+
+prog=`basename $0`
+dir=`dirname $0`
+
+usage () {
+  echo "usage: $prog [-h] [-jar aprove.jar] [-strat file.strategy] file.[trs|srs|xtc|xml] [timeout]"
+}
+
+help () {
+  cat <<EOF
+Run Aprove on the input file with timeout (60s if not set)
+using aprove.jar ($dir/aprove.jar if not set)
+and file.strategy ($dir/color-graph.strategy if not set),
+and generate file.out, file.time and file.aprove.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+quit () { rm -f $tmp; cat $base.out; exit $status; }
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+aprove_jar=$dir/aprove.jar
+strat=''
+
+while true
+do
+  case "$1" in
+  -h) usage; echo; help; exit 0;;
+  -jar) if test $# -lt 2; then args; else aprove_jar=$2; shift 2; fi;;
+  -strat) if test $# -lt 2; then args; else strat=" -s $2"; shift 2; fi;;
+  *) break;;
+  esac
+done
+
+if test $# -lt 1 -o $# -gt 2; then args; fi
+
+input=$1
+timeout=${2:-60}
+
+case $input in
+*.trs) base=${input%.trs};;
+*.srs) base=${input%.srs};;
+*.xtc) base=${input%.xtc};;
+*.xml) base=${input%.xml};;
+*) echo 'error: unknown file type'; usage; exit 1;;
+esac
+
+time="$dir/time $base.time"
+aprove="java -ea -jar $aprove_jar -m wst -C color -t $timeout -p xml -u cli$strat $input"
+
+tmp=/tmp/aprove$$
+$time $aprove > $tmp
+status=$?
+
+cat $base.time
+
+if test $status -ne 0
+then
+  echo ERROR > $base.out
+  quit
+fi
+
+if awk "{if(\$1>$timeout){exit 0}{exit 1}}" $base.time
+then
+  echo KILLED > $base.out
+  status=1
+  quit
+fi
+
+tail -n +2 $tmp > $base.aprove
+
+if test ! -s $base.aprove
+then
+  rm -f $base.aprove
+  echo MAYBE > $base.out
+  status=1
+  quit
+fi
+
+head -n 1 $tmp > $base.out
+
+quit
+
+
+
+# code for generating cpf immediately after aprove
+
+aprove2cpf $base.aprove
+status=$?
+
+if test $status -ne 0
+then
+  echo ERROR > $base.out
+  quit
+fi
+
+if test ! -f $base.cpf
+then
+  echo MAYBE > $base.out
+fi
+
+if grep -q trsTerminationProof $base.cpf
+then
+  echo YES > $base.out
+else
+  echo NO > $base.out
+fi
+
+quit

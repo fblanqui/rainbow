@@ -1,0 +1,16 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2010-11-15
+
+MAIN := check
+
+FILES := color
+
+LIBS := xml-light/xml-light tpdb-tools/tpdb str color/color convert
+
+INCLUDES := -I xml-light -I tpdb-tools -I color
+
+FRAGILE_FILES := color check
+
+include Makefile.ocaml

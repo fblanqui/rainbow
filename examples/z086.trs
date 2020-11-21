@@ -1,0 +1,11 @@
+(COMMENT
+   A TRS version of the z086 SRS, which termination was open until a 
+ matrix interpretation proof has been given by Dieter Hofbauer and 
+ Johannes Waldmann.
+)
+(VAR x)
+(RULES
+ a(a(x)) -> c(b(x))
+ b(b(x)) -> c(a(x))
+ c(c(x)) -> b(a(x))
+)

@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2010-06-22
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] file.cpf"; }
+
+help () {
+  cat <<EOF
+Check the correctness of file.cpf.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1; then args; fi
+
+cpf=$1
+
+case $cpf in
+*.xml) base=${cpf%.xml};;
+*.cpf) base=${cpf%.cpf};;
+*) echo 'error: unknown file type'; exit 1;;
+esac
+
+`dirname $0`/../bin/main -icpf $cpf -ocoq > $base.v && (ulimit -t 60; time -p coqc -dont-load-proofs $base.v)

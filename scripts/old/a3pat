@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-10-23
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h] file.cpf"
+}
+
+help () {
+  cat <<EOF
+Call CiME to produce a file.v from a file.cpf.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1; then args; fi
+
+case $1 in
+*.cpf) base=${1%.cpf}; input="-icpf $1";;
+*) echo "error: $input: unknown file type"; usage; exit 1
+esac
+
+cime3 $input -ocoq $base.v

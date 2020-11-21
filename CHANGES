@@ -1,0 +1,115 @@
+
+10-12-01: [Blanqui]
+- added support for subterm criterion
+
+10-11-29: [Blanqui]
+- added support for argument filters with permutations
+
+10-11-16: [Blanqui]
+- migration to CPF 2.0
+
+10-11-11: [Blanqui]
+- added conversion from PB to XTC
+
+-----------------------------------------------------------------------------
+10-11-05: NEW RELEASE (SVN revision 826)
+
+10-11-05: [Blanqui]
+- removed old scripts
+- migration to OCaml 3.12, Coq 8.3 and CoLoR 101102
+
+10-06-30: [Blanqui]
+- added support for RPO with a quasi-ordering as precedence
+(based on Sorin Stratulat's patch of Coccinelle)
+
+10-06-17: [Blanqui]
+- created a main program "convert" to replace all conversion scripts
+
+10-04-23: [Koprowski]
+- added support for tropical matrix interpretations
+
+-----------------------------------------------------------------------------
+09-12-07: NEW RELEASE (SVN revision 725)
+
+09-12-03: [Blanqui]
+- accept an optional attribute [type="rel"] in the CPF format
+for specifying relative or AC steps in loops
+- in log, removed system calls to awk by using the parsing functions instead,
+and extended logs to XTC files
+- fixed some bugs in the translation of loops from CPF to Rainbow format
+
+09-11-06: [Blanqui]
+- files color.ml and rainbow.ml: started a new version of Rainbow
+based on the code extracted from CoLoR (make extract and make rainbow)
+- added support for incompletely defined matrix interpretations
+- added support for variable condition violation
+
+09-10-18: [Blanqui]
+- added support for incompletely defined polynomial interpretations
+
+09-09-21: [Blanqui]
+- added support for general argument filterings (without permutation)
+- added support for RPO based on Coccinelle
+
+09-09-04: [Blanqui]
+- added support for the formats XTC and CPF
+
+09-07-17: [Blanqui]
+- added support for flat context closure, root labelling and unlabelling
+
+09-07-02: [Blanqui]
+- allows argument filterings in the definition of reduction orderings
+- uses ARedOrd instead of AMonAlg (increases score by almost 2%)
+
+09-06-02: [Blanqui]
+- added new programs: get_log, for building a log file for a TPDB directory,
+and get_stat, for computing statistics from a log file
+
+09-05-22: [Blanqui]
+- certification of loops for (relative) (AC) TRS/SRS
+
+09-03-18: [Blanqui]
+- generate a boolean function for deciding symbol equality
+- removed SCC decomposition superseded by valid decomposition
+
+-----------------------------------------------------------------------------
+09-03-16: NEW RELEASE
+
+09-02-10: [Blanqui]
+- added xml-light and tpdb tools in Rainbow
+- moved all scripts into the directory scripts/
+- added new scripts and a Makefile generator for running a prover
+
+08-11-10: [Blanqui]
+- added support for rewriting modulo equations l=r such that Vars(l)=Vars(r)
+  (eg. C/AC) by considering these equations as relative rules
+- added support for graph decomposition and unification
+- simplified the Coq output by introducing a module and definitions
+  for each signature and, in the proof, by using more CoLoR tactics
+
+08-03-14: [Koprowski,Waldmann]
+- added support for arctic matrix interpretations proofs
+
+07-08-10: [Ducas]
+- SCC decomposition
+
+-----------------------------------------------------------------------------
+07-07-13: NEW RELEASE
+
+07-05-25: [Blanqui]
+- TPDB relative rules "->="
+- argument filtering
+- dependency pairs transformation
+
+07-04-25: [Koprowski,Zantema]
+- matrix interpretations
+
+06-10-24: [Blanqui]
+- translation of TPDB identifiers into valid Coq identifiers
+
+-----------------------------------------------------------------------------
+06-07-21: NEW RELEASE
+
+06-07-21: [Blanqui]
+- translation from TPDB to XML Rainbow format
+- Coq proof generation for polynomial interpretations

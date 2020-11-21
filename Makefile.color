@@ -1,0 +1,13 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2012-03-20
+
+MAIN := color
+
+# the order is important !
+FILES :=
+
+include ../Makefile.ocaml
+
+WARNINGS =

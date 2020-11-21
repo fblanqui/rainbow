@@ -1,0 +1,1425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: sharedFormat.xsd,v 0.9 2009/06/10 8:59:13 rene Exp $ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="2.0">
+  <xs:element name="name" type="xs:string"> </xs:element>
+  <xs:group name="label">
+    <xs:annotation>
+      <xs:documentation>a label for semantic labeling</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="numberLabel">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="number"
+              type="xs:nonNegativeInteger"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="symbolLabel">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:group maxOccurs="unbounded" minOccurs="0" ref="symbol"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:group name="symbol">
+    <xs:annotation>
+      <xs:documentation>is used as a function symbol in terms, orderings, ....</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element ref="name"/>
+      <xs:element name="sharp">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:group ref="symbol"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="labeledSymbol">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:group ref="symbol"/>
+            <xs:group ref="label"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="var" type="xs:string"/>
+
+  <xs:group name="term">
+    <xs:choice>
+      <xs:element ref="var"/>
+      <xs:element name="funapp">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:group ref="symbol"/>
+            <xs:element name="arg" maxOccurs="unbounded" minOccurs="0">
+              <xs:complexType>
+                <xs:group ref="term"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="rule">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="lhs">
+          <xs:complexType>
+            <xs:group ref="term"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="rhs">
+          <xs:complexType>
+            <xs:group ref="term"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="rules">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="rule"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dps">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="rules"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="trs">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="rules"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="usableRules">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="rules"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="number">
+    <xs:choice>
+      <xs:element name="integer" type="xs:integer"/>
+      <xs:element name="rational">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="numerator" type="xs:integer"/>
+            <xs:element name="denominator" type="xs:positiveInteger"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="coefficient">
+    <xs:complexType>
+      <xs:choice>
+        <xs:group ref="number"/>
+	<xs:element name="minusInfinity"/>
+        <xs:element name="plusInfinity"/>
+        <xs:element ref="vector"/>
+        <xs:element ref="matrix">
+          <xs:annotation>
+            <xs:documentation>list of column-vectors</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="vector">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="coefficient"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="matrix">
+    <xs:annotation>
+      <xs:documentation>list of column-vectors</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="vector"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="polynomial">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="coefficient"/>
+        <xs:element name="variable" type="xs:positiveInteger"/>
+        <xs:element name="sum">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="polynomial"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="product">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="polynomial"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="max">
+          <xs:annotation>
+            <xs:documentation>note that this max is only used for min-max interpretations and not for arctic... interpretations. For example, in arctic one has to use plus and not max.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="polynomial"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="min">
+          <xs:annotation>
+            <xs:documentation>note that this min is only used for min-max interpretations and not for arctic... interpretations. For example, in arctic one has to use plus and times, but neither min nor max.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="polynomial"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="function">
+    <xs:choice>
+      <xs:element ref="polynomial">
+        <xs:annotation>
+          <xs:documentation>note that when using polynomials over a vector-domain, then the constant coefficient is a vector whereas the other coefficients are matrices. Moreover, in this case only linear polynomials are allowed.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="arity" type="xs:nonNegativeInteger"/>
+  <xs:element name="dimension" type="xs:positiveInteger"/>
+  <xs:element name="strictDimension" type="xs:positiveInteger"/>
+  <xs:element name="degree" type="xs:nonNegativeInteger"/>
+  <xs:element name="position" type="xs:positiveInteger"/>
+  <xs:element name="argumentFilter">
+    <xs:annotation>
+      <xs:documentation>an argument filter consist of a mapping from symbols to collapsing or non-collapsing filters.
+
+Example: 
+an entry f/3 -&gt; collapsing/1 filters the ternary symbol f to its third argument.
+an entry f/3 -&gt; nonCollapsing/3 1 filters the term f(x,y,z) to f(z,x) 
+
+often for nonCollapsing filters the positions are given in increasing order. However, argument filters can also be used to simulate permutations e.g. to express some LPOS by an LPO an argument filter.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" name="argumentFilterEntry">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:group ref="symbol"/>
+              <xs:element ref="arity"/>
+              <xs:choice>
+                <xs:element name="collapsing" type="xs:positiveInteger"/>
+                <xs:element name="nonCollapsing">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="0" ref="position"/>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+              </xs:choice>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="domain">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="naturals"/>
+        <xs:element name="integers">
+          <xs:annotation>
+            <xs:documentation>purpose: arctic below zero is arctic-integer</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="rationals">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="delta">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:group ref="number"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="arctic">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="domain"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="tropical">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="domain"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="matrices">
+          <xs:annotation>
+            <xs:documentation>the domain of matrices where the elements are from the subdomain specified</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dimension"/>
+              <xs:element ref="strictDimension">
+                <xs:annotation>
+                  <xs:documentation>in the upper left submatrix of this dimension there must be a strict decrease
+(the remaining parts of the matrix is ignored for strict decreases, only weak decreases are required).</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element ref="domain"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="redPair">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="interpretation">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="type">
+                <xs:complexType>
+                  <xs:choice>
+                    <xs:element name="polynomial">
+                      <xs:annotation>
+                        <xs:documentation>standard polynomial orders over a specified domain (a semiring or something else). Note that if the domain is "matrices of naturals" then everything has to be a matrix, even the constants. This is in contrast to "matrixInterpretations" where the constants are vectors.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element ref="domain"/>
+                          <xs:element ref="degree">
+                            <xs:annotation>
+                              <xs:documentation>the maximal degree of the polynomial interpretation (some certifiers only support linear interpretations).
+all interpretations given should respect this degree.
+</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="matrixInterpretation">
+                      <xs:annotation>
+                        <xs:documentation>matrix interpretations where the elements are vectors. Example: if the domain is naturals, then the coefficients in front of variables have to be matrices and the constants should be vectors over the naturals.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element ref="domain"/>
+                          <xs:element ref="dimension"/>
+                          <xs:element ref="strictDimension">
+                            <xs:annotation>
+                              <xs:documentation>in the upper subvector of this dimension there must be a strict decrease
+(the lower part of the vector is ignored for strict decreases, only weak decreases are required).</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:choice>
+                </xs:complexType>
+              </xs:element>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="interpret">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:group ref="symbol"/>
+                    <xs:element ref="arity"/>
+                    <xs:group ref="function"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="pathOrder">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="statusPrecedence">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="statusPrecedenceEntry" maxOccurs="unbounded" minOccurs="0">
+                      <xs:annotation>
+                        <xs:documentation>Note that the arities within the status precedence entries in combination with argument filters correspond to the unfiltered arities. E.g., if the second argument of f/3 is dropped then the status precedence entry still has to give arity 3 to f.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:group ref="symbol"/>
+                          <xs:element ref="arity"/>
+                          <xs:element name="precedence" type="xs:nonNegativeInteger">
+                            <xs:annotation>
+                              <xs:documentation>higher numbers = higher precedence. Unspecified symbols obtain precedence 0.</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                          <xs:choice>
+                            <xs:element name="lex">
+                              <xs:annotation>
+                                <xs:documentation>to realize permutations for lex. comparisons, use an argument filter, which just permutes. Eg., right-to-left precedence of f(x,y,z) where the second argument is dropped, is done by argument filter f -&gt; [3,1]</xs:documentation>
+                              </xs:annotation>
+                              <xs:complexType> </xs:complexType>
+                            </xs:element>
+                            <xs:element name="mul"/>
+                          </xs:choice>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element minOccurs="0" ref="argumentFilter">
+                <xs:annotation>
+                  <xs:documentation>To realize permutations for lex. comparisons, one has to use an argument filter, which can just permute. Eg., right-to-left precedence of f(x,y,z) where the second argument is dropped, is done by argument filter f -&gt; [3,1]</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="arithFunction">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="natural" type="xs:nonNegativeInteger"/>
+        <xs:element name="variable" type="xs:positiveInteger"/>
+        <xs:element name="sum">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="arithFunction"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="product">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="arithFunction"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="min">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="arithFunction"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="max">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="arithFunction"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="model">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="finiteModel">
+          <xs:annotation>
+            <xs:documentation>The carrierSize determines the carrier. A size of n fixes the carrier to {0,1,...,n-1}. If no labeling is given, then every symbol is labeled by the interpretation of the arguments
+</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="carrierSize" type="xs:positiveInteger"/>
+              <xs:element minOccurs="0" name="tupleOrder">
+                <xs:annotation>
+                  <xs:documentation>If this element is missing, then one uses semantic labeling in the model version. 
+
+Otherwise, semantic labeling is applied with a quasi-model where one uses a tuple extension of the standard order &gt; on the naturals. However, there can be several such extensions, e.g., point-wise, lexicographic (w.r.t. permutation), ...</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:choice>
+                    <xs:element name="pointWise">
+                      <xs:annotation>
+                        <xs:documentation>here, (x1,..,xn) &gt; (y1,...,yn) iff all xi &gt;= yi and for some i: xi &gt; yi</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                  </xs:choice>
+                </xs:complexType>
+              </xs:element>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="interpret">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:group ref="symbol"/>
+                    <xs:element ref="arity"/>
+                    <xs:element ref="arithFunction"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="labeling" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>labeling domain and functions for semantic labeling. This feature is currently unsupported and not specified. It is only present to state that this entry might come in the future.</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="rootLabeling"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dpProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="pIsEmpty">
+          <xs:annotation>
+            <xs:documentation>trivial proof by stating that the set of DPs is empty</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="depGraphProc">
+          <xs:annotation>
+            <xs:documentation>split the current set of DPs into several smaller subproblems by using some DP-graph estimation.
+Note that all components of the graph have to be specified, including singleton nodes which do not form an SCC on their own. The list of components has to be given in topological order, where the components with no incoming edges are listed first.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="component">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="dps"/>
+                    <xs:element name="realScc" type="xs:boolean">
+                      <xs:annotation>
+                        <xs:documentation>may only be set to false, if component is singleton node without edge to itself.
+if set to true, then proof for remaining DP problem has to be given</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="arcs">
+                      <xs:annotation>
+                        <xs:documentation>If the arcs-element is present, then the forward arcs between the components have to be listed as children. This will improve the efficiency of certain certifiers. Example:
+
+- not giving an arcs-element is always safe (but will slow down some certifiers)
+- giving an <arcs/> element is only possible if there are no forward arcs
+- giving an
+  <arcs>
+    <forwardArc>2</forwardArc>
+    <forwardArc>7</forwardArc>
+  </arcs> 
+  element states that there are only arcs to the components 2 and
+  7 positions further in the component-list.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element maxOccurs="unbounded" minOccurs="0" name="forwardArc"
+                            type="xs:positiveInteger">
+                            <xs:annotation>
+                              <xs:documentation>the idea is to make relative forward references by numbers:
+e.g., the graph
+A to B
+B to A
+A to C
+A to E
+C to D
+D to D
+E to E
+
+can be represented in the component list
+[  (A,B, real, 1,2),    (C,nonreal,2),    (E,real),    (D,real)  ]
+
+then (A,B) gets forwardArcs 1 and 2 since (C) is one element after the (A,B) entry and (E) is 2 elements after the (A,B) entry
+
+(C) gets a forwardArc 2, since (D) is two elements later in the list.
+
+In this way, one does not have do introduce numbers for the SCCs,
+the SCC-DAG is present, and the list must be in topologic order,
+since the forwardArcs are positive numbers only.
+</xs:documentation>
+                            </xs:annotation>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element minOccurs="0" ref="dpProof"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="redPairProc">
+          <xs:annotation>
+            <xs:documentation>Use a reduction pair where only the non-strict order has to be monotone.
+It allows to delete those DPs which are strictly oriented. 
+The remaining DPs have to be given. 
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" ref="orderingConstraints"/>
+              <xs:element ref="orderingConstraintProof"/>
+              <xs:element ref="dps"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="redPairUrProc">
+          <xs:annotation>
+            <xs:documentation>Use a Ce-compatible reduction pair where only the non-strict order has to be monotone.
+It allows to delete those DPs which are strictly oriented. 
+Here only the usable rules have to be weakly oriented.
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" ref="orderingConstraints"/>
+              <xs:element ref="orderingConstraintProof"/>
+              <xs:element ref="dps"/>
+              <xs:element ref="usableRules"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="monoRedPairProc">
+          <xs:annotation>
+            <xs:documentation>Use a reduction pair where both the non-strict and the strict order have to be monotone.
+It allows to delete those DPs and those rules of the TRSs which are strictly oriented. 
+The remaining DPs and the remaining TRSs have to be given.
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" ref="orderingConstraints"/>
+              <xs:element ref="orderingConstraintProof"/>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="monoRedPairUrProc">
+          <xs:annotation>
+            <xs:documentation>Use a Ce-compatible reduction pair where both the non-strict and the strict order have to be monotone.
+It allows to delete those DPs and those rules of the TRSs which are strictly oriented.
+Moreover, all non-usable rules can also be deleted.
+Here, only the usable rules instead of all rules of the TRS have to be oriented.
+The remaining DPs and the remaining TRSs have to be given, as well as the usable rules.
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" ref="orderingConstraints"/>
+              <xs:element ref="orderingConstraintProof"/>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="usableRules"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="subtermProc">
+          <xs:annotation>
+            <xs:documentation>Use the subterm criterion to delete some DPs.
+Only collapsing argument filters or identity filters may be used.
+The remaining DPs have to be given. The subterm criterion can also be used in combination wirth rewrite sequences.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="argumentFilter"/>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="projectedRewriteSequence">
+                <xs:annotation>
+                  <xs:documentation>The rule specifies the DP for which the rewrite sequence is applied. Here, the rewrite sequence for the projected terms has to be given.
+
+Example: if s -&gt; t is the DP and a rewrite sequence t_1 -&gt;+ t_n is given then it must hold that pi(s) = t_1, and t_n contains pi(t) as a subterm.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="rule"/>
+                    <xs:element ref="rewriteSequence"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element ref="dps"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="semlabProc">
+          <xs:annotation>
+            <xs:documentation>Use the semantic labeling processor to apply semantic labeling on both the DPs and the TRS. The model element determines the kind (model or quasi-model version, label, root-labeling, etc.).
+
+The decreasing rules should be of the form f_..(x1,..,xn) -&gt; f_..(x1,..,xn), i.e., the variables should be enumerated from x1 onwards.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="model"/>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="unlabProc">
+          <xs:annotation>
+            <xs:documentation>removes one layer of labels that were added by semantic labeling.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="sizeChangeProc">
+          <xs:annotation>
+            <xs:documentation>the size-change criterion processor.
+for each DP, one size-change graph has to be given.
+the set of graphs must be size-change terminating.
+if the size-change criterion is used in combination with the subterm criterion, then the edges in the graphs have to be built according to the subterm relation, and no rules have to be oriented.
+otherwise, for every existing edge in a size-change graph, the corresponding subterm on the rhs is considered as usable, and the corresponding usable rules have to be added to the set of usable rules.
+if not all rules are usable, then one has to use a Ce-compatible order.
+
+Example: 
+DP: F(s(x),g(x)) -&gt; F(id(x),g(x))
+TRS: g(..) -&gt; ..
+     id(x) -&gt; x
+     
+if one builds a size-change graph where only the first arguments are connected, then one only has to add the id-rule to the set of usable rules, but not the g-rule.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:choice>
+                <xs:element name="subtermCriterion"/>
+                <xs:element name="reductionPair">
+                  <xs:annotation>
+                    <xs:documentation>The usable rules are optional. If they are used, a Ce-compatible order has to be used.
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+                  </xs:annotation>
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element minOccurs="0" ref="orderingConstraints"/>
+                      <xs:element ref="orderingConstraintProof"/>
+                      <xs:element ref="usableRules" minOccurs="0"/>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+              </xs:choice>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="sizeChangeGraph">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="rule"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="edge">
+                      <xs:annotation>
+                        <xs:documentation>an edge in a size change graph is always of the form
+
+left-argument &gt; / &gt;= right-argument
+                          
+position 0 corresponds to the whole term.</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="position" type="xs:nonNegativeInteger"/>
+                          <xs:element name="strict" type="xs:boolean"/>
+                          <xs:element name="position" type="xs:nonNegativeInteger"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="flatContextClosureProc">
+          <xs:annotation>
+            <xs:documentation>the flat context closure as required for the root labeling technique.
+
+one also has to provide the list of flat contexts which
+is used to fix the variable names in the resulting DP problem.
+
+see the flat context closure technique for TRS for more explanations including an example.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" name="freshSymbol">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:group ref="symbol"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="flatContexts">
+                <xs:complexType>
+                  <xs:group maxOccurs="unbounded" ref="context"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="argumentFilterProc">
+          <xs:annotation>
+            <xs:documentation>just apply an argument filter and continue on the filtered DP problem</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="argumentFilter">
+                <xs:annotation>
+                  <xs:documentation>To realize permutations for lex. comparisons, one has to use an argument filter, which can just permute. Eg., right-to-left precedence of f(x,y,z) where the second argument is dropped, is done by argument filter f -&gt; [3,1]</xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="finitenessAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dpInput"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="substitution">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="substEntry" maxOccurs="unbounded" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="var"/>
+              <xs:group ref="term"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="context">
+    <xs:choice>
+      <xs:element name="box"/>
+      <xs:element name="funContext">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:group ref="symbol"/>
+            <xs:element name="before">
+              <xs:complexType>
+                <xs:group maxOccurs="unbounded" minOccurs="0" ref="term"/>
+              </xs:complexType>
+            </xs:element>
+            <xs:group ref="context"/>
+            <xs:element name="after">
+              <xs:complexType>
+                <xs:group maxOccurs="unbounded" minOccurs="0" ref="term"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="rewriteSequence">
+    <xs:annotation>
+      <xs:documentation>if t_0 is startterm, and there are rewrite-steps p_i, rule_i, t_i (for i = 1..n)
+then t_{i-1} -&gt;_{p_i,rule_i} t_i for all i=1..n
+
+If the rewrite sequence is built via two TRSs, where one corresponds to a major step, and the other corresponds to a relative step, then all relative steps have to be marked with the relative-elemnt. (e.g., for loops in relative termination analysis R/S, the S-steps are relative, or for loops in the DP-framework with (P,R), the R-steps are relative).</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="startTerm">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:group ref="term"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element maxOccurs="unbounded" name="rewriteStep" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="positionInTerm">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="position" maxOccurs="unbounded" minOccurs="0"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element ref="rule"/>
+              <xs:element minOccurs="0" name="relative"/>
+              <xs:group ref="term"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="trsTerminationProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="rIsEmpty">
+          <xs:annotation>
+            <xs:documentation>state that the TRS is terminating since it has no rules</xs:documentation>
+          </xs:annotation>
+          <xs:complexType/>
+        </xs:element>
+        <xs:element name="ruleRemoval">
+          <xs:annotation>
+            <xs:documentation>use a reduction pair where both the weak and the strict ordering are monotone.
+Delete all strictly decreasing rules.
+The remaining rules have to be given.
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" ref="orderingConstraints"/>
+              <xs:element ref="orderingConstraintProof"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="dpTrans">
+          <xs:annotation>
+            <xs:documentation>switch to dependency pairs. The dependency pairs have to be given. If marked is true, then the whole dp-proof is using a notion of chain where rewriting with the rules is applied at arbitrary positions (including the root). Otherwise, rewriting with the rules is not allowed at the root.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dps"/>
+              <xs:element name="markedSymbols" type="xs:boolean"/>
+              <xs:element ref="dpProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="semlab">
+          <xs:annotation>
+            <xs:documentation>Use the semantic labeling . The model element determines the kind (model or quasi-model version, label, root-labeling, etc.)
+
+The decreasing rules should be of the form f_..(x1,..,xn) -&gt; f_..(x1,..,xn), i.e., the variables should be enumerated from x1 onwards.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="model"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="unlab">
+          <xs:annotation>
+            <xs:documentation>removes one layer of labels that were added by semantic labeling.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="stringReversal">
+          <xs:annotation>
+            <xs:documentation>reverse the strings in a TRS, i.e., replace f(g(h(x))) -&gt; f(x) by h(g(f(x))) -&gt; f(x). 
+Note that the variable in a reversed rule should be same as the variable in the original rule.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="flatContextClosure">
+          <xs:annotation>
+            <xs:documentation>the flat context closure as required for the root labeling technique.
+
+one also has to provide the list of flat contexts which
+is used to fix the variable names in the resulting TRS.
+
+example: if the flat contexts are 
+f(Box,x_1)
+f(x_1,Box)
+g(Box,u)
+g(z,Box)
+
+and the TRS f(x,y) -&gt; g(x,y)
+
+then the resulting TRS is obtained by replacing all boxes
+by corresponding left- and right-hand sides of rules:
+
+f(f(x,y),x_1) -&gt; f(g(x,y),x_1)
+f(x_1,f(x,y)) -&gt; f(x_1,g(x,y))
+g(f(x,y),u) -&gt; g(g(x,y),u)
+g(z,f(x,y)) -&gt; g(z,g(x,y))
+
+The reason for this requirement is that 
+1) it eases the check whether the given system really consists
+   of all rules - where one does not have to bother with 
+   variable renamings
+2) the flat context closures have to be computed in any way.
+3) the overhead in the size is small, since for every 
+   flat-context there will be n new rules each being
+   larger than the the context.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="flatContexts">
+                <xs:complexType>
+                  <xs:group maxOccurs="unbounded" ref="context"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="terminationAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trsInput"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="loop">
+    <xs:annotation>
+      <xs:documentation>a loop is given by a (non-empty) rewrite-sequence t0 -&gt;+ tn where additionally tn = C[t0 sigma]</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="rewriteSequence"/>
+        <xs:element ref="substitution"/>
+        <xs:group ref="context"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="trsNonterminationProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="variableConditionViolated">
+          <xs:annotation>
+            <xs:documentation>there is a rule where the lhs is a variable, or the rhs contains variables not occurring in the lhs.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType/>
+        </xs:element>
+        <xs:element name="ruleRemoval">
+          <xs:annotation>
+            <xs:documentation>Remove some rules to figure out the really nonterminating TRS.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsNonterminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="stringReversal">
+          <xs:annotation>
+            <xs:documentation>reverse the strings in a TRS, i.e., replace f(g(h(x))) -&gt; f(x) by h(g(f(x))) -&gt; f(x). 
+Note that the variable in a reversed rule should be same as the variable in the original rule.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trsNonterminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="loop"/>
+        <xs:element name="dpTrans">
+          <xs:annotation>
+            <xs:documentation>switch to DPs as complete termination technique. See dpTrans within dpProof for other details</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dps"/>
+              <xs:element name="markedSymbols" type="xs:boolean"/>
+              <xs:element ref="dpNonterminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="nonterminationAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trsInput"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="relativeTerminationProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element name="rIsEmpty">
+          <xs:annotation>
+            <xs:documentation>state that the R/S is relative terminating since R has no rules</xs:documentation>
+          </xs:annotation>
+          <xs:complexType/>
+        </xs:element>
+        <xs:element name="sIsEmpty">
+          <xs:annotation>
+            <xs:documentation>state that the R/S is relative terminating by termination of R since S has no rules</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trsTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ruleRemoval">
+          <xs:annotation>
+            <xs:documentation>use a reduction pair where both the weak and the strict ordering are monotone.
+Delete all strictly decreasing rules from R and S.
+The remaining rules of first R and then S have to be given.
+
+If the ordering constraint proof is only an assumption, the orderingConstraints-element becomes mandatory.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" ref="orderingConstraints"/>
+              <xs:element ref="orderingConstraintProof"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="relativeTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="semlab">
+          <xs:annotation>
+            <xs:documentation>Use the semantic labeling . The model element determines the kind (model or quasi-model version, label, root-labeling, etc.)
+Both the labeled version of R and S have to be given (first R, then S).
+
+The decreasing rules should be of the form f_..(x1,..,xn) -&gt; f_..(x1,..,xn), i.e., the variables should be enumerated from x1 onwards.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="model"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="relativeTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="unlab">
+          <xs:annotation>
+            <xs:documentation>removes one layer of labels that were added by semantic labeling. (first R, then S, as usual)</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="relativeTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="stringReversal">
+          <xs:annotation>
+            <xs:documentation>reverse the strings in both TRSs R and S, i.e., replace f(g(h(x))) -&gt; f(x) by h(g(f(x))) -&gt; f(x). 
+Note that the variable in a reversed rule should be same as the variable in the original rule.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="relativeTerminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="relativeTerminationAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trsInput"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dpNonterminationProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="loop"/>
+        <xs:element name="dpRuleRemoval">
+          <xs:annotation>
+            <xs:documentation>Remove some rules or DPs to figure out the really nonterminating DP problem (remaining rules and DPs are given). Note that this element can be used for several termination techniques like the dependency graph processor, or the various reduction pair processors. 
+</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dps"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="dpNonterminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="infinitenessAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="dpInput"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="relativeNonterminationProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="loop"/>
+        <xs:element ref="trsNonterminationProof"/>
+        <xs:element name="variableConditionViolated">
+          <xs:annotation>
+            <xs:documentation>there is a rule where the lhs is a variable, or the rhs contains variables not occurring in the lhs.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType/>
+        </xs:element>
+        <xs:element name="ruleRemoval">
+          <xs:annotation>
+            <xs:documentation>Remove some rules to figure out the really nonterminating TRSs. (as usual, first R, then S)</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trs"/>
+              <xs:element ref="trs"/>
+              <xs:element ref="relativeNonterminationProof"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="nonterminationAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="trsInput"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="orderingConstraints">
+    <xs:annotation>
+      <xs:documentation>every strict order has to be well-founded. 
+every strict order &gt; has to be compatible with all orders &gt;' (both strict and non-strict):
+Here, compatible between a strict order &gt; and &gt;' is defined as: 
+s &gt; t and t &gt;' u implies s &gt; u, and similarly, s &gt;' t and t &gt; u implies s &gt; u.
+every order has to be stable.
+The demand for monotonicity, etc. is specified by the corresponding sub-elements.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="orderingConstraintElement">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="strict" type="xs:boolean"/>
+              <xs:element name="ceCompatible" type="xs:boolean"/>
+              <xs:element minOccurs="0" name="monotonePositions">
+                <xs:annotation>
+                  <xs:documentation>if this element is not given, then monotonicity is not required. Otherwise, the order has to be monotone in the specified argument positions. Either this complete monotonicity, or it is specified by an argument filter pi (only non-collapsing entries), where the order has to be monotone in (f,i), whenever pi(f) contains i.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:choice>
+                    <xs:element ref="argumentFilter">
+                      <xs:annotation>
+                        <xs:documentation>To realize permutations for lex. comparisons, one has to use an argument filter, which can just permute. Eg., right-to-left precedence of f(x,y,z) where the second argument is dropped, is done by argument filter f -&gt; [3,1]</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element name="everySymbolAndPosition"/>
+                  </xs:choice>
+                </xs:complexType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ignoredPositions">
+                <xs:annotation>
+                  <xs:documentation>only non-collapsing argument filters pi. whenever i is not contained in pi(f), then  f(s1,...si,...sn) &gt;= f(s1,....ti,...sn) must hold for arbitrary si and ti.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="argumentFilter">
+                      <xs:annotation>
+                        <xs:documentation>To realize permutations for lex. comparisons, one has to use an argument filter, which can just permute. Eg., right-to-left precedence of f(x,y,z) where the second argument is dropped, is done by argument filter f -&gt; [3,1]</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element maxOccurs="unbounded" minOccurs="0" ref="rule"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="orderingConstraintProof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="redPair"/>
+        <xs:element name="satisfiableAssumption">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="orderingConstraints"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="proof">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="trsTerminationProof"/>
+        <xs:element ref="trsNonterminationProof"/>
+        <xs:element ref="relativeTerminationProof"/>
+        <xs:element ref="relativeNonterminationProof"/>
+        <xs:element ref="dpProof"/>
+        <xs:element ref="dpNonterminationProof"/>
+        <xs:element ref="orderingConstraintProof"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="url" type="xs:string"/>
+  <xs:element name="trsInput">
+    <xs:annotation>
+      <xs:documentation>If a certifier is not able to treat certain features like AC or innermost or ..., then it has to guarantee that these fields are not present in the certification problem. If they are, the certifier has to fail (and not just ignore!)</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="trs"/>
+        <xs:element name="strategy" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>no strategy means standard rewriting without restrictions</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:choice>
+              <xs:element name="innermost"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" name="equations">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="rules"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="relativeRules" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="rules"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dpInput">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="trs"/>
+        <xs:element ref="dps"/>
+        <xs:element name="strategy" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>no strategy means standard rewriting without restrictions</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:choice>
+              <xs:element name="innermost"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="minimal" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="certificationProblem">
+    <xs:annotation>
+      <xs:documentation>the root node of the certification problem format.
+</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="input">
+          <xs:complexType>
+            <xs:choice>
+              <xs:element ref="trsInput"/>
+              <xs:element ref="dpInput"/>
+              <xs:element ref="orderingConstraints"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="cpfVersion" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>current version number: 2.0</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="proof"/>
+        <xs:element minOccurs="0" name="origin">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="proofOrigin">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="tool">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="name" type="xs:string"/>
+                          <xs:element minOccurs="0" name="version" type="xs:string"/>
+                          <xs:element minOccurs="0" name="strategy" type="xs:string"/>
+                          <xs:element minOccurs="0" ref="url"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="toolUser">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="firstName" type="xs:string"/>
+                          <xs:element name="lastName" type="xs:string"/>
+                          <xs:element minOccurs="0" ref="url"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="inputOrigin">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element minOccurs="0" name="tpdb-reference"/>
+                    <xs:element minOccurs="0" name="source" type="xs:string"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

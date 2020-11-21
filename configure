@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2012-03-20
+
+prog=`basename $0`
+dir=`dirname $0`
+
+usage () { echo "usage: $prog [-h] <CoLoR directory>"; }
+
+help () {
+  cat <<EOF
+Generate coq/Makefile and extract.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+if test $# -ne 1; then args; fi
+
+case "$1" in
+-h|--help) usage; echo; help; exit 0;;
+esac
+
+echo 'compile library xml-light tpdb-tools ...'
+make -r xml-light tpdb-tools || exit $?
+
+echo 'generate coq/cpf.v ...'
+make -r coq/cpf.v || exit $?
+
+echo 'generate coq/Makefile ...'
+(cd coq && coq_makefile -R $1 CoLoR *.v > Makefile) || exit $?
+
+echo 'compile Coq files ...'
+make -C coq || exit $?
+
+echo 'generate extract ...'
+sed -e "s|__COQ_OPTIONS__|-R $1 CoLoR|" extract.in > extract
+chmod a+x extract
+
+echo 'run extract ...'
+./extract

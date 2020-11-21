@@ -1,0 +1,8 @@
+main = QTRSDependencyPairs : RepeatS(0,*,workOnDPs)
+
+workOnDPs  = First(QDPDependencyGraph:Maybe(QDPNonSCC), Any(solver1, solver2, solver3)) 
+ 
+solver1 = Timer(20000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 3, Collapse = True], Allstrict = False, Usable = False, Active = False, ATrans = False, MergeMutual = False])
+solver2 = Timer(20000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = False, Active = False, ATrans = False, MergeMutual = False])
+solver3 = Timer(20000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 2, Dimension = 3, Collapse = True], Allstrict = False, Usable = False, Active = False, ATrans = False, MergeMutual = False])
+

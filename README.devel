@@ -1,0 +1,32 @@
+Guideline for Rainbow developers
+--------------------------------
+
+- For new contributors, update the COPYRIGHT file.
+
+- Don't forget to update the CHANGES and THANKS files.
+
+- If you bring important modifications to an already existing file,
+add in the header your name with the modification date yy-mm-dd.
+
+- Don't forget to update the grammar/problem.xsd and grammar/proof.xsd
+files.
+
+About compilation:
+------------------
+
+- Before any commit, make sure that Rainbow compiles with the last
+stable release of OCaml, and that all the examples work.
+
+About the Rainbow programming style:
+------------------------------------
+
+- Try to follow the style currently used, indentations, etc.
+
+- Use maximum 78 characters per line.
+
+- Add the Rainbow header at the beginning of each file with the
+creation or modification date yy-mm-dd.
+
+- Put comments! (You may use the possibilities offered by ocamldoc).
+
+- Do not use List.fold_left and List.fold_right.

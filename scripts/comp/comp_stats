@@ -1,0 +1,5 @@
+#!/bin/sh
+
+comp_results < trs.html | awk -f `dirname $0`/trs.awk
+echo
+comp_results < srs.html | awk -f `dirname $0`/srs.awk

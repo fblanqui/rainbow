@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2006-07-21
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h]"
+}
+
+help () {
+  cat <<EOF
+Create a tar.gz file of Rainbow sources from the SVN archive.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+case "$1" in
+-h) usage; echo; help; exit 0
+esac
+
+cwd=`pwd`
+dir=Rainbow_`date +%y%m%d`
+
+cd /tmp
+rm -rf $dir
+svn co svn://scm.gforge.inria.fr/svn/rainbow/trunk/rainbow
+mv rainbow $dir
+
+cd $dir
+rm -rf `find . -name .svn`
+rm -rf `find . -name old`
+rm -rf fred
+cd scripts
+rm -f create_dist
+
+cd /tmp
+tar cf $dir.tar $dir
+gzip $dir.tar
+mv $dir.tar.gz $cwd

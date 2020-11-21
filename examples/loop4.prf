@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<counter_example
+   xmlns="urn:rainbow.proof.format"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:rainbow.proof.format http://color.inria.fr/proof.xsd">
+  <srs_counter_example>
+    <loop>
+      <start>
+	<letter>a</letter><letter>a</letter>
+      </start>
+      <steps>
+	<step>
+	  <modulo>
+	    <step>
+              <position>1</position>
+              <rule>
+		<lhs><letter>a</letter></lhs>
+		<rhs><letter>b</letter></rhs>
+              </rule>
+	    </step>
+	  </modulo>
+          <position>0</position>
+          <rule>
+            <lhs><letter>a</letter><letter>b</letter></lhs>
+            <rhs><letter>a</letter><letter>a</letter></rhs>
+          </rule>
+	</step>
+      </steps>
+      <position>0</position>
+    </loop>
+  </srs_counter_example>
+</counter_example>

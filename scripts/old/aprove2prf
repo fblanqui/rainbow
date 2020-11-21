@@ -1,0 +1,73 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2008-11-07
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-saxon saxon.jar] [-xsl aproveToRainbow.xsl] file.aprove"; }
+
+help () {
+  cat <<EOF
+Produce a file.prf from a file.aprove using aproveToRainbow.xsl
+(or $aprove_xsl if not given)
+and saxon.jar (or $saxon_jar if not given).
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+saxon_jar=~/src/saxonb9-1-0-2j/saxon9.jar
+aprove_xsl=`dirname $0`/aproveToRainbow.xsl
+
+while true
+do
+  case "$1" in
+  -h) usage; echo; help; exit 0;;
+  -saxon) if test $# -lt 2; then args; else saxon_jar=$2; shift 2; fi;;
+  -xsl) if test $# -lt 2; then args; else aprove_xsl=$2; shift 2; fi;;
+  *) break;;
+  esac
+done
+
+if test $# -ne 1; then args; fi
+
+case $1 in
+*.aprove) base=${1%.aprove};;
+*) echo 'error: unknown file type'; exit 1;;
+esac
+
+if grep -q MAYBE $base.out
+then
+  echo "ERROR: $base.out is MAYBE"
+  exit 1
+fi
+
+java -jar $saxon_jar $base.aprove $aprove_xsl > $base.prf
+status=$?
+
+if test $status -ne 0
+then
+  rm -f $base.prf
+  echo "ERROR $status"
+  exit $status
+fi
+
+if test ! -s $base.prf
+then
+  rm -f $base.prf
+  echo "ERROR: $base.prf empty"
+  exit 1
+fi
+
+if grep -q -v '<proof>' $base.prf
+then
+  rm -f $base.prf
+  echo "ERROR: $base.prf has no proof"
+  exit 1
+fi

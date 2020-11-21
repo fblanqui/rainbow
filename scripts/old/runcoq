@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-03-05
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-init-file coqrc] coq_file [timeout]"; }
+
+help () {
+  cat <<EOF
+Check the coq_file with Coq. Default timeout is 60s.
+
+Options:
+-h Provide this help and exit
+-init to use a Coq initialization file distinct from ~/.coqrc
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+-init-file)
+  if test $# -lt 2; then args; else init=" -init-file $2"; shift 2; fi;;
+*) init='';;
+esac
+
+if test $# -lt 1 -o $# -gt 2; then args; fi
+
+case $1 in
+*.v) base=${1%.v};;
+*) echo 'error: unknown file type'; exit 1;;
+esac
+
+if test ! -f $base.v; then echo "no file $base.v"; exit 1; fi
+
+timeout=${2:-60}
+
+time="`dirname $0`/time $base.coq"
+coq="coqc -dont-load-proofs$init $base.v"
+
+(ulimit -t $timeout; $time $coq)
+status=$?
+
+cat $base.coq
+
+remove_error_file () { if test -f $base.err; then rm -f $base.err; fi; }
+
+case $status in
+0) echo YES; remove_error_file;;
+137) echo KILLED; remove_error_file;;
+*) echo ERROR $status; touch $base.err; rm -f $base.coq;;
+esac
+
+exit $status

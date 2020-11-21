@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- dp transformation + argument filtering + polynomial interpretation -->
+
+<proof
+   xmlns="urn:rainbow.proof.format"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:rainbow.proof.format http://color.inria.fr/proof.xsd">
+  <dp>
+    <proof>
+      <arg_filter>
+	<def>
+          <mapping><fun>zero</fun></mapping>
+          <mapping><fun>succ</fun></mapping>
+	  <mapping><fun>minus</fun><proj>0</proj></mapping>
+	  <mapping><fun>quot</fun></mapping>
+	</def>
+	<proof>
+	  <manna_ness>
+	    <order>
+	      <rpo>
+		<mapping>
+		  <fun>zero</fun>
+		  <status><lex/></status>
+		  <prec>0</prec>
+		</mapping>
+		<mapping>
+		  <fun>succ</fun>
+		  <status><lex/></status>
+		  <prec>1</prec>
+		</mapping>
+		<mapping>
+		  <fun>minus</fun>
+		  <status><lex/></status>
+		  <prec>0</prec>
+		</mapping>
+		<mapping>
+		  <fun>quot</fun>
+		  <status><lex/></status>
+		  <prec>2</prec>
+		</mapping>
+	      </rpo>
+	    </order>
+	    <proof>
+	      <trivial/>
+	    </proof>
+	  </manna_ness>
+	</proof>
+      </arg_filter>
+    </proof>
+  </dp>
+</proof>

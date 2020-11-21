@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+            "http://www.w3.org/TR/REC-html40/loose.dtd">
+<HTML>
+<HEAD><TITLE></TITLE>
+
+<META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<META name="GENERATOR" content="hevea 1.06">
+</HEAD>
+<BODY >
+<!--HEVEA command line is: /usr/bin/hevea -fix -exec xxdate.exe urlhref.hva format.tex -->
+<!--HTMLHEAD-->
+<!--ENDHTML-->
+<!--PREFIX <ARG ></ARG>-->
+<!--CUT DEF section 1 -->
+
+
+ 
+
+
+
+<H1 ALIGN=center>Termination Problem Data Base: format of input files</H1>
+
+<H3 ALIGN=center><A HREF="http://www.lri.fr/~marche/">C. Marché</A> &nbsp;&nbsp;<A HREF="http://www.lsi.upc.es/~albert/">A. Rubio</A> &nbsp;&nbsp;<A HREF="http://www.win.tue.nl/~hzantema/">H. Zantema</A></H3>
+
+<H3 ALIGN=center>March 2, 2005</H3>
+<!--TOC section Syntax of TRS input files-->
+
+<H2><A NAME="htoc1">1</A>&nbsp;&nbsp;Syntax of TRS input files</H2><!--SEC END -->
+
+<!--TOC subsection grammar of input files-->
+
+<H3><A NAME="htoc2">1.1</A>&nbsp;&nbsp;grammar of input files</H3><!--SEC END -->
+<BR>
+<DIV ALIGN=center><TABLE CELLSPACING=2 CELLPADDING=0>
+<TR><TD ALIGN=right NOWRAP><I>spec</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><TT>(</TT> &nbsp; <I>decl</I> <TT>)</TT> <I>spec</I> | <FONT FACE=symbol>e</FONT></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>decl</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><TT>VAR</TT> &nbsp; <I>idlist</I> | <TT>THEORY</TT> &nbsp; <I>listofthdecl</I> |
+<TT>RULES</TT> &nbsp; <I>listofrules</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP>&nbsp;</TD>
+<TD ALIGN=center NOWRAP>&nbsp;</TD>
+<TD ALIGN=left NOWRAP>| <TT>STRATEGY</TT> &nbsp; <I>strategydecl</I> | <I>id</I> &nbsp; <I>anylist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>anylist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>id</I> &nbsp; <I>anylist</I> | <I>string</I> &nbsp; <I>anylist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP>&nbsp;</TD>
+<TD ALIGN=center NOWRAP>&nbsp;</TD>
+<TD ALIGN=left NOWRAP>| <TT>(</TT> &nbsp; <I>anylist</I> <TT>)</TT> &nbsp; <I>anylist</I> | <TT>,</TT> &nbsp; <I>anylist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>idlist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>id</I> &nbsp; <I>idlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>listofthdecl</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <TT>(</TT> &nbsp; <I>thdecl</I> &nbsp; <TT>)</TT> &nbsp; <I>listofthdecl</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>thdecl</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>id</I> &nbsp; <I>idlist</I> | <TT>EQUATIONS</TT> &nbsp; <I>eqlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>eqlist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>equation</I> &nbsp; <I>eqlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>equation</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>term</I> &nbsp; <TT>==</TT> &nbsp; <I>term</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>listofrules</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>rule</I> &nbsp; <I>listofrules</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>rule</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>term</I> &nbsp; <TT>-&gt;</TT> &nbsp; <I>term</I> | <I>term</I> &nbsp; <TT>-&gt;</TT> &nbsp; <I>term</I> &nbsp; <TT>|</TT> &nbsp;
+<I>condlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP>&nbsp;</TD>
+<TD ALIGN=center NOWRAP>&nbsp;</TD>
+<TD ALIGN=left NOWRAP>| <I>term</I> &nbsp; <TT>-&gt;=</TT> &nbsp; <I>term</I> | <I>term</I> &nbsp; <TT>-&gt;=</TT> &nbsp; <I>term</I> &nbsp; <TT>|</TT> &nbsp;
+<I>condlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>condlist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>cond</I> | <I>cond</I> &nbsp; <TT>,</TT> &nbsp; <I>condlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>cond</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>term</I> &nbsp; <TT>-&gt;</TT> &nbsp; <I>term</I> | <I>term</I> &nbsp; <TT>-&gt;&lt;-</TT> &nbsp; <I>term</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>term</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>id</I> | <I>id</I> &nbsp; <TT>(</TT> &nbsp; <TT>)</TT> | <I>id</I> &nbsp; <TT>(</TT> &nbsp; <I>termlist</I> &nbsp; <TT>)</TT></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>termlist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>term</I> | <I>term</I> &nbsp; <TT>,</TT> &nbsp; <I>termlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>strategydecl</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><TT>INNERMOST</TT> | <TT>OUTERMOST</TT> | <TT>CONTEXTSENSITIVE</TT> &nbsp;
+<I>csstratlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>csstratlist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <TT>(</TT> <I>id</I> &nbsp; <I>intlist</I> <TT>)</TT> &nbsp;
+<I>csstratlist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>intlist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>int</I> &nbsp; <I>intlist</I></TD>
+</TR></TABLE></DIV><BR>
+<I>id</I> are non-empty sequences of characters except space, 
+<TT>'('</TT>, <TT>')'</TT>, <TT>'"'</TT> and <TT>','</TT> ; and
+excluding special sequences <TT>'-&gt;'</TT>, <TT>'=='</TT>, <TT>-&gt;=</TT>,
+<TT>'-&gt;&lt;-'</TT>, <TT>'|'</TT> and keywords <TT>CONTEXTSENSITIVE</TT>,
+<TT>EQUATIONS</TT>, <TT>INNERMOST</TT>, <TT>OUTERMOST</TT>, <TT>RULES</TT>, <TT>STRATEGY</TT>, <TT>THEORY</TT>
+and <TT>VAR</TT>. <BR>
+<BR>
+<I>string</I> are sequences of any characters between double quotes<BR>
+<BR>
+<I>int</I> are non-empty sequences of digits<BR>
+<BR>
+<!--TOC subsection Semantical conditions-->
+
+<H3><A NAME="htoc3">1.2</A>&nbsp;&nbsp;Semantical conditions</H3><!--SEC END -->
+
+<UL><LI>
+at least one <TT>VAR</TT> and one <TT>RULES</TT> sections are
+ mandatory. If they are several, the union is taken and :
+<UL><LI>
+a symbol declared in a <TT>VAR</TT> section must not have been used
+ in previous declarations, and is assumed to denote a variable in
+ remaining declarations (in particular must not be applied to
+ arguments)
+<LI>a symbol occuring in a <TT>RULES</TT> section which has not been
+ used before is assumed to denote a function symbol, and must be used
+ afterwards always with the same arity.
+</UL>
+</UL>
+<!--TOC section Syntax of SRS input files-->
+
+<H2><A NAME="htoc4">2</A>&nbsp;&nbsp;Syntax of SRS input files</H2><!--SEC END -->
+
+<!--TOC subsection grammar of input files-->
+
+<H3><A NAME="htoc5">2.1</A>&nbsp;&nbsp;grammar of input files</H3><!--SEC END -->
+<BR>
+<DIV ALIGN=center><TABLE CELLSPACING=2 CELLPADDING=0>
+<TR><TD ALIGN=right NOWRAP><I>spec</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><TT>(</TT> &nbsp; <I>decl</I> <TT>)</TT> <I>spec</I> | <FONT FACE=symbol>e</FONT></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>decl</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><TT>RULES</TT> &nbsp; <I>listofrules</I> | <TT>STRATEGY</TT> &nbsp; <I>strategydecl</I> | <I>id</I> &nbsp; <I>anylist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>anylist</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>id</I> &nbsp; <I>anylist</I> | <I>string</I> &nbsp; <I>anylist</I> 
+ | <TT>(</TT> &nbsp; <I>anylist</I> <TT>)</TT> &nbsp; <I>anylist</I> | <TT>,</TT> &nbsp; <I>anylist</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>listofrules</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><FONT FACE=symbol>e</FONT> | <I>rule</I> &nbsp; <TT>,</TT> &nbsp; <I>listofrules</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>rule</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>word</I> &nbsp; <TT>-&gt;</TT> &nbsp; <I>word</I> | <I>word</I> &nbsp; <TT>-&gt;</TT></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP>&nbsp;</TD>
+<TD ALIGN=center NOWRAP>&nbsp;</TD>
+<TD ALIGN=left NOWRAP>| <I>word</I> &nbsp; <TT>-&gt;=</TT> &nbsp; <I>word</I> | <I>word</I> &nbsp; <TT>-&gt;=</TT></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>word</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><I>id</I> | <I>id</I> &nbsp; <I>word</I></TD>
+</TR>
+<TR><TD ALIGN=right NOWRAP><I>strategydecl</I></TD>
+<TD ALIGN=center NOWRAP>::=</TD>
+<TD ALIGN=left NOWRAP><TT>LEFTMOST</TT> | <TT>RIGHTMOST</TT></TD>
+</TR></TABLE></DIV><BR>
+<I>id</I> are non-empty sequences of characters except space, 
+<TT>'('</TT>, <TT>')'</TT>, <TT>'"'</TT> and <TT>','</TT> ; and
+excluding special sequences <TT>'-&gt;'</TT> and <TT>-&gt;=</TT>, and keywords <TT>LEFTMOST</TT>,
+<TT>RIGHTMOST</TT>, <TT>RULES</TT>, and <TT>STRATEGY</TT>.<BR>
+<BR>
+<I>string</I> are sequences of any characters between double quotes<BR>
+<BR>
+<!--TOC subsection Semantical conditions-->
+
+<H3><A NAME="htoc6">2.2</A>&nbsp;&nbsp;Semantical conditions</H3><!--SEC END -->
+
+<UL><LI>
+at least one <TT>RULES</TT> section is
+ mandatory. If they are several, the union is taken.
+</UL>
+<!--HTMLFOOT-->
+<!--ENDHTML-->
+<!--FOOTER-->
+<HR SIZE=2>
+<BLOCKQUOTE><EM>This document was translated from L<sup>A</sup>T<sub>E</sub>X by
+</EM><A HREF="http://pauillac.inria.fr/~maranget/hevea/index.html"><EM>H<FONT SIZE=2><sup>E</sup></FONT>V<FONT SIZE=2><sup>E</sup></FONT>A</EM></A><EM>.
+</EM></BLOCKQUOTE>
+</BODY>
+</HTML>

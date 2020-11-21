@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-09-02
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] file.cpf"; }
+
+help () {
+  cat <<EOF
+Produce a file.prf from a file.cpf. Requires that file.pb exists.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1; then args; fi
+
+input=$1
+
+case $input in
+*.xml) base=${input%.xml};;
+*.cpf) base=${input%.cpf};;
+*) echo 'error: unknow file type'; usage; exit 1;;
+esac
+
+if test ! -f $base.pb; then echo "error: no file $base.pb"; exit 1; fi
+if test ! -f $input; then echo "error: no file $input"; exit 1; fi
+
+`dirname $0`/../bin/cpf2prf $base.pb $input > $base.prf
+status=$?
+
+case $status in
+0) rm -f $base.bug;;
+2) rm -f $base.prf $base.bug;;
+*) rm -f $base.prf; touch $base.bug; echo ERROR $status;;
+esac
+
+exit $status

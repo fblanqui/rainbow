@@ -1,0 +1,19 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2011-03-08
+
+MAIN := print_function
+
+# the order is important !
+FILES := util error problem proof prf_of_newcpf print_function
+
+FRAGILE_FILES := prf_of_newcpf print_function
+
+LIBS := str xml-light/xml-light tpdb-tools/tpdb-tools tmp/color
+
+INCLUDES := -I xml-light -I tpdb-tools -I tmp
+
+newcpf.cmo newcpf.cmx: WARNINGS = -warn-error Aez
+
+include Makefile.ocaml

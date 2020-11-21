@@ -1,0 +1,12 @@
+main = WST07Heuristic
+
+# TRS Standard
+trs = TRSToQTRS:qtrs
+gtrs = GTRSToQTRS:qtrs
+
+
+qtrs = Repeat(0, *, Any( \
+        QTRSRRR[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Max = 4, Dimension = 3, Collapse = False]], \
+        QTRSRRR[Order = PMatroNat[Engine = MINISAT, Range = 1, Dimension = 3, Collapse = False]] \
+        ))
+

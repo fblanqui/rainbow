@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2014-06-13
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] cpf_file"; }
+
+help () {
+  cat <<EOF
+Check the correctness of a CPF file.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1; then usage; exit 1; fi
+
+`dirname $0`/../new_convert -icpf $1 -obool

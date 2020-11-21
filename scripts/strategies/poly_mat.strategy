@@ -1,0 +1,13 @@
+main = QTRSDependencyPairs : RepeatS(0,*,workOnDPs)
+
+workOnDPs  = First(QDPDependencyGraph:Maybe(QDPNonSCC), Any(solver1, solver2)) 
+# Any is parallel 
+
+# Timer is in millseconds
+solver1 = Timer(5000, QDPReductionPair[Usable = False, Allstrict = False, Order = PMatroNat[Engine = MINISAT, Dimension = 2, Range = 2]])
+solver2 = Timer(5000, QDPReductionPair[Usable = False, Allstrict = False, Order = POLO[Engine = MINISAT, Degree = 1, Range = 2, LinearMonotone = True]])
+
+# Usable = False: do not use usable rules
+# Allstrict = False: one strict pair suffices
+# Engine: if there are problems with minisat, you can try the buildin SAT4J as Engine
+# Degree can also be set to 1, if you only want linear polynomials

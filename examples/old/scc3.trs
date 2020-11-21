@@ -1,0 +1,7 @@
+(VAR x y)
+(RULES
+minus(x,zero) -> x
+minus(succ(x),succ(y)) -> minus(x,y)
+quot(zero,succ(y)) -> zero
+quot(succ(x),succ(y)) -> succ(quot(minus(x,y),succ(y)))
+)

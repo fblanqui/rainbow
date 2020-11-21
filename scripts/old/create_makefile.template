@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-10-23
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [dir]"; }
+
+prover=
+ext=
+ext2coq=
+
+help () {
+  create_makefile -h | tail -n +3 | sed -e "s|create_makefile|`basename $0`|" -e "s|prover|$prover|" -e "s|ext2coq|$ext2coq|" | sed -e "s|ext|$ext|" -e "s|a program|the script|"
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -gt 1; then args; fi
+
+create_makefile "$prover" $ext "$ext2coq" $*

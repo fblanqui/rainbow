@@ -1,0 +1,78 @@
+
+- replace 
+- remove complete in matrix interpretations when default_mi is defined
+   in CoLoR
+
+- add support for dp problems in .pb files
+
+- take the number of unification steps as argument
+
+- in the type of proofs, use maps instead of association lists?
+
+- in the set of symbols of a problem, includes symbols in labels?
+
+- define a module for each rewrite system with all the useful lemmas
+  about it (e.g. preservation of variables)?
+
+- prove each transformation as a separate lemma?
+
+- check well-formedness of identifiers and numbers?
+
+Done:
+-----
+
+- put some warnings in the Coq code too
+
+- extend proof.xsd, prf_of_xml and prf_of_cpf with permutative AF
+
+- allow partial interpretation definitions (for polynomial and
+  matrices), giving a default value to undefined interpretations?
+  unfortunately, coq generates an error when there is a redundant
+  clause. use an intermediate type before mkMatrixInt?
+  use the fact that the set of symbols is known by Rainbow.
+
+- generates a .log file when converting a tpdb file into a pb file
+  to speed up get_log?
+  => get_log not used anymore
+
+- replace scripts by OCaml programs
+
+- debug tropical interpretations
+
+- default interpreation for matrix interpretations
+
+- handle A/C/AC axioms as relative rules in .pb and .xtc files like we
+   already do in .trs files
+  => done when generating coq code
+
+- handle variable condition violated
+
+- check if a TRS is not in fact a SRS
+  => not useful anymore because of as_srs certificate
+
+- remove definitions of prove_cc_succ from the termination proof
+
+- merge argument filterings and projections
+  (symbols that are given no filter or projection can be given a
+   vector of true's only)
+
+- add location (line, character) information in the xml data type
+
+- define a module for each signature with all the useful definitions
+  and lemmas about it
+
+- add FC transformation
+
+- add unlabelling
+
+- add root-labelling
+
+- end Lemma beq_symb_ok by Qed instead of Defined
+
+- add support for relative SRSs and their reversal
+
+- remove try no_relative_rule at the beginning. this is the proof of
+  each proof handler to do this job.
+
+- naming problem: R, rel, etc. cannot be used as function symbols...
+  => solved by enclosing user symbols into modules

@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-11-06
+
+prog=`basename $0`
+dir=`dirname $0`
+
+usage () { echo "usage: $prog [-h]"; }
+
+help () {
+  cat <<EOF
+Extract OCaml files from the CoLoR library and compile them.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h|--help) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 0; then args; fi
+
+echo remove tmp directory ...
+rm -rf tmp
+
+echo create tmp directory ...
+mkdir tmp
+echo 'put nothing in this directory since it can be erased' > tmp/README
+
+echo extract OCaml files from CoLoR ...
+coqtop -q __COQ_OPTIONS__ -I coq -batch -l extraction.v || exit $?
+
+
+# TEST 
+echo replace tmp/String0.ml[i] by String0.ml[i] ...
+cp -f String0.ml String0.mli tmp
+
+#echo patch tmp/Int.ml[i] ...
+#sed -i '1i type ocaml_int = int' tmp/Int.ml
+#sed -i -e 's|val i2z : t -> int|val i2z : t -> ocaml_int|' tmp/Int.ml
+#sed -i '1i type ocaml_int = int' tmp/Int.mli
+#sed -i -e 's|val i2z : t -> int|val i2z : t -> ocaml_int|' tmp/Int.mli
+
+if test ! -f order_deps
+then
+  echo compile order_deps ...
+  ocamlopt -o order_deps str.cmxa order_deps.ml || exit $?
+fi
+
+# go into tmp directory
+cd tmp
+
+echo compute dependencies ...
+ocamldep *.ml *.mli > .depend.color || exit $?
+
+files=`ls *.ml | sed -e 's|.ml||g'`
+files=`sed -e 's|.cm[iox]||g' .depend.color | ../order_deps $files`
+
+echo create Makefile ...
+sed -e "s|FILES :=|FILES := $files|" ../Makefile.color > Makefile || exit $?
+
+echo compile extracted library ...
+make -r -j 3 color.cma color.cmxa

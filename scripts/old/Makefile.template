@@ -1,0 +1,144 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-10-23
+
+ifndef PROVER
+PROVER :=
+endif
+
+ifndef EXT2COQ
+EXT2COQ :=
+endif
+
+ifndef PROVER_TIMEOUT
+PROVER_TIMEOUT := 60
+endif
+
+ifndef COQ_TIMEOUT
+COQ_TIMEOUT := 60
+endif
+
+ifdef COQ_INIT
+INIT := -init-file $(COQ_INIT)
+else
+INIT :=
+endif
+
+.SUFFIXES:
+
+.PHONY: default rename pb prover coq check \
+	clean-check clean-coq clean-prover clean-pb \
+	clean-prover-error clean-prover-maybe clean-prover-killed \
+	clean-prover-too-long clean-coq-error clean-coq-too-long
+
+FILES := $(TRS_FILES) $(SRS_FILES) $(XTC_FILES)
+
+FILES_PB := $(FILES:%=%.pb)
+FILES_EXT := $(FILES:%=%.__EXT__)
+FILES_OUT := $(FILES:%=%.out)
+FILES_TIME := $(FILES:%=%.time)
+FILES_V := $(FILES:%=%.v)
+FILES_VO := $(FILES:%=%.vo)
+FILES_GLOB := $(FILES:%=%.glob)
+FILES_COQ := $(FILES:%=%.coq)
+
+.PRECIOUS: $(FILES_PB) $(FILES_EXT) $(FILES_V) $(FILES_COQ) $(FILES_OUT)
+
+define usage
+	echo "usage: [PROVER_TIMEOUT=timeout] [COQ_TIMEOUT=timeout] $(MAKE) [-r] [-k] [-j [max_jobs]] target"
+	echo
+	echo 'targets:'
+	echo ''
+	echo ' rename:        rename TPDB filenames into Coq valid filenames'
+	echo ' pb:            generate Rainbow problem files'
+	echo ' prover:        generate prover output files'
+	echo " coq:           generate Coq files"
+	echo ' check:         check Coq files'
+	echo ''
+	echo ' clean-check:   remove .vo files'
+	echo ' clean-coq:     remove Coq files'
+	echo ' clean-prover:  remove prover output files'
+	echo ' clean-pb:      remove Rainbow problem files'
+	echo ''
+	echo ' clean-prover-error'
+	echo ' clean-prover-killed'
+	echo ' clean-prover-maybe'
+	echo ' clean-prover-too-long'
+	echo ' clean-coq-error'
+	echo ' clean-coq-too-long'
+endef
+
+default:
+	@$(usage)
+
+rename:
+	rename_tpdb
+
+pb: $(FILES_PB)
+
+prover: $(FILES_EXT)
+
+coq: $(FILES_V)
+
+check: $(FILES_VO)
+
+%.vo: %.coq
+	@if test -f $@; then touch $@; else echo runcoq $*.v already tried; exit 1; fi
+
+%.coq: %.v
+	runcoq $(INIT) $+ $(COQ_TIMEOUT)
+
+%.v: %.__EXT__
+	$(EXT2COQ) $+
+
+%.__EXT__: %.out
+	@if test -f $@; then touch $@; else echo $(PROVER) $* already tried; exit 1; fi
+
+%.out: %.xtc
+	@if test -f $@; then touch $@; else echo $(PROVER) $+ $(PROVER_TIMEOUT); $(PROVER) $+ $(PROVER_TIMEOUT); fi
+
+%.out: %.trs
+	@if test -f $@; then touch $@; else echo $(PROVER) $+ $(PROVER_TIMEOUT); $(PROVER) $+ $(PROVER_TIMEOUT); fi
+
+%.out: %.srs
+	@if test -f $@; then touch $@; else echo $(PROVER) $+ $(PROVER_TIMEOUT); $(PROVER) $+ $(PROVER_TIMEOUT); fi
+
+%.pb: %.trs
+	tpdb2pb $+
+
+%.pb: %.srs
+	tpdb2pb $+
+
+%.pb: %.xtc
+	tpdb2pb $+
+
+clean-check:
+	@rm -f $(FILES_VO) $(FILES_GLOB) $(FILES_COQ)
+
+clean-coq: clean-check
+	@rm -f $(FILES_V)
+
+clean-prover: clean-coq
+	@rm -f $(FILES_OUT) $(FILES_EXT) $(FILES_TIME)
+
+clean-pb:
+	@rm -f $(FILES_PB)
+
+clean-prover-error:
+	@rm -f `grep -l ERROR $(FILES_OUT)`
+
+clean-prover-maybe:
+	@rm -f `grep -l MAYBE $(FILES_OUT)`
+
+clean-prover-killed:
+	@rm -f `grep -l KILLED $(FILES_OUT)`
+
+clean-prover-too-long:
+	@rm -f `find_time time $(PROVER_TIMEOUT) | sed -e 's|\.time|.out|'`
+
+clean-coq-error:
+	@rm -f `find . -name \*.bug | sed -e "s|\.bug|.v|"`
+
+clean-coq-too-long:
+	@rm -f `find_time coq $(COQ_TIMEOUT) | sed -e 's|\(.*\)\.coq|\1.coq \1.vo|'`

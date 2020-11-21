@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-06-02
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-ext file_extension]"; }
+
+help () {
+  cat <<EOF
+Generates on the stdout a log file gathering all the results obtained
+in the TPDB directory dir (or . if not set). The certificates generated
+by the prover have the extension 'file_extension' (or 'cpf' if not set).
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+ext=cpf
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+-ext) if test $# -lt 2; then args; else ext=$2; shift 2; fi;;
+esac
+
+if test $# -gt 0; then args; fi
+
+`dirname $0`/../bin/get_log $ext | sed -e 's|^./||g'

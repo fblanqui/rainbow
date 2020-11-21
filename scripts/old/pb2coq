@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-02-10
+
+prog=`basename $0`
+
+usage () {
+  echo "usage: $prog [-h] file.pb"
+}
+
+help () {
+  cat <<EOF
+Generate file.pb.v from the Rainbow problem file.pb.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1
+then
+  usage; exit 1
+fi
+
+pb=$1
+
+coq=$pb.v
+
+`dirname $0`/../bin/pb2coq < $pb > $coq
+status=$?
+
+if test $status -ne 0
+then
+  rm -f $coq
+  exit $status
+fi

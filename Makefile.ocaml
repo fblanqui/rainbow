@@ -1,0 +1,137 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2010-11-15
+
+# variables to define before including this file:
+# MAIN (single file), FILES, FRAGILE_FILES, LIBS, INCLUDES
+
+# targets defined by including this file:
+# default, clean::
+
+.SUFFIXES:
+
+.PHONY: tags clean depend default
+
+ifeq ($(VERBOSE),1)
+  SHOW := @true
+  HIDE :=
+else
+  SHOW := @echo
+  HIDE := @
+endif
+
+#LIBS :=
+CMAFILES := $(LIBS:%=%.cma)
+CMXAFILES := $(LIBS:%=%.cmxa)
+
+#INCLUDES :=
+
+WARN := +a-44-45-32-4
+FRAGILE = -w $(WARN)-4 -warn-error $(WARN)
+WARNINGS = -w $(WARN) -warn-error $(WARN)
+
+#OCAMLC_OPTIONS :=
+#OCAMLOPT_OPTIONS :=
+#OCAMLDOC_OPTIONS :=
+
+OCAMLC = ocamlc -g $(OCAMLC_OPTIONS) $(INCLUDES) $(WARNINGS)
+OCAMLLEX := ocamllex
+OCAMLYACC := ocamlyacc
+OCAMLDEP := ocamldep $(INCLUDES)
+OCAMLOPT = ocamlopt -unsafe -noassert -inline 10000 $(OCAMLOPT_OPTIONS) $(INCLUDES) $(WARNINGS)
+OCAMLDOC := ocamldoc $(OCAMLDOC_OPTIONS) $(INCLUDES)
+
+# the order is important !
+#FILES :=
+
+CMOFILES := $(FILES:%=%.cmo)
+CMXFILES := $(FILES:%=%.cmx)
+
+#MAIN :=
+BYT := $(MAIN).byt
+OPT := $(MAIN).opt
+
+.PRECIOUS: $(MAIN).cmo $(MAIN).cmx
+
+default: $(CMOFILES) $(CMXFILES) $(BYT) $(OPT) $(MAIN)
+
+%: %.opt
+	ln -f -s $*.opt $*
+
+%: %.byt
+	ln -f -s $*.byt $*
+
+clean::
+	rm -f $(MAIN)
+
+%.byt: $(CMOFILES) %.cmo
+	$(SHOW) OCAMLC -o $@
+	$(HIDE) $(OCAMLC) -o $@ $(CMAFILES) $+
+
+%.opt: $(CMXFILES) %.cmx
+	$(SHOW) OCAMLOPT -o $@
+	$(HIDE) $(OCAMLOPT) -o $@ $(CMXAFILES) $+
+#	$(SHOW) STRIP $@
+#	$(HIDE) strip $@
+
+clean::
+	rm -f $(MAIN).byt $(MAIN).opt
+
+$(MAIN).cma: $(CMOFILES)
+	$(SHOW) OCAMLC -a -o $@
+	$(HIDE) $(OCAMLC) -a -o $@ $+
+
+$(MAIN).cmxa: $(CMXFILES)
+	$(SHOW) OCAMLOPT -a -o $@
+	$(HIDE) $(OCAMLOPT) -a -o $@ $+
+
+# files with fragile pattern-matching allowed
+#FRAGILE_FILES :=
+
+$(FRAGILE_FILES:%=%.cmo) $(FRAGILE_FILES:%=%.cmx): WARNINGS = $(FRAGILE)
+
+# default ocaml compilation rules
+
+%.ml %.mli: %.mly
+	$(SHOW) OCAMLYACC $*.mly
+	$(HIDE) $(OCAMLYACC) $*.mly
+
+%.ml: %.mll
+	$(SHOW) OCAMLLEX $*.mll
+	$(HIDE) $(OCAMLLEX) $*.mll
+
+%.cmi: %.mli
+	$(SHOW) OCAMLC -c $*.mli
+	$(HIDE) $(OCAMLC) -c $*.mli
+
+%.cmo: %.ml
+	$(SHOW) OCAMLC -c $*.ml
+	$(HIDE) $(OCAMLC) -c $*.ml
+
+%.cmx: %.ml
+	$(SHOW) OCAMLOPT -c $*.ml
+	$(HIDE) $(OCAMLOPT) -c $*.ml
+
+# other targets
+
+tags:
+	otags -sr '.mli' -r .
+
+clean::
+	rm -f *~ *.cm* *.o *.a
+
+# file dependencies
+
+depend:
+	$(SHOW) OCAMLDEP
+	$(HIDE) $(OCAMLDEP) $(FILES:%=%.ml) \
+		$(FILES:%=%.mli) $(MAIN).ml > .depend.$(MAIN)
+
+clean::
+	rm -f .depend.$(MAIN)
+
+.depend.$(MAIN):
+	touch .depend.$(MAIN)
+
+include .depend.$(MAIN)

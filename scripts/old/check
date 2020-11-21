@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2006-05-31
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] file.[trs|srs|xtc|xml|pb] file.[cpf|xml|prf]"; }
+
+help () {
+  cat <<EOF
+Check the correctness of a proof file wrt a given problem file.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0
+esac
+
+if test $# -ne 2; then args; fi
+
+pb=$1
+prf=$2
+
+case $pb in
+*.xml|*.xtc|*.trs|*.srs) echo tpdb2pb $pb ...; tpdb2pb $pb || exit $?;;
+*.pb) ;;
+*) echo 'unknown file type'; exit 1;;
+esac
+
+case $prf in
+*.xml) base=${prf%.xml}; echo cpf2prf $prf ...; cpf2prf $prf || exit $?;;
+*.cpf) base=${prf%.cpf}; echo cpf2prf $prf ...; cpf2prf $prf || exit $?;;
+*.prf) base=${prf%.prf};;
+*) echo 'unknown file type'; exit 1;;
+esac
+
+echo prf2coq $base.prf ...
+prf2coq $base.prf || exit $?
+
+echo runcoq $base.v ...
+runcoq $base.v && echo OK

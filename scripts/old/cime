@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-10-20
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-icime file.cim3] file.[trs|srs|xtc] [timeout]"; }
+
+help () {
+  cat <<EOF
+Run CiME with timeout (default is 60s) using preamble file.cim3
+(or `dirname $0`/preamble.cim3 if not set),
+on the input file and generate file.out, file.time and file.aprove.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+cime="-icime `dirname $0`/preamble.cim3"
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+-icime) if test $# -lt 2; then args; else cime="$1 $2"; shift 2; fi;;
+esac
+
+if test $# -lt 1 -o $# -gt 2; then args; fi
+
+timeout=${2:-60}
+
+case $1 in
+*.trs) base=${1%.trs}; input="-itrs $1";;
+*.srs) base=${1%.srs}; input="-isrs $1";;
+*.xtc) xtc2trs $1 || exit $?; base=${1%.xtc}; input="-itrs $base.trs";;
+*) echo 'error: unknown file type'; usage; exit 1
+esac
+
+time="`dirname $0`/time $base.time"
+cime="cime3 $cime $input -ocpf $base.cpf"
+
+(ulimit -t $timeout; $time $cime)
+status=$?
+
+cat $base.time
+
+if awk "{if(\$1>$timeout){exit 0}{exit 1}}" $base.time
+then
+  echo KILLED > $base.out
+  rm -f $base.cpf
+else
+  if test -f $base.cpf
+  then
+    if grep -q nonTermination $base.cpf
+    then
+      echo NO > $base.out
+    else
+      if grep -q termination $base.cpf
+      then
+        echo YES > $base.out
+      else
+        echo ERROR
+        rm -f $base.cpf
+        exit 1
+      fi
+    fi
+  else
+    echo MAYBE > $base.out
+  fi
+fi
+
+cat $base.out
+
+if test -f $base.xtc; then rm -f $base.trs; fi
+
+exit $status

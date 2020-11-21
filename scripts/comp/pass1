@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/local/share/rainbow/convert -ixtc $2 -icpf $1 -ocoq

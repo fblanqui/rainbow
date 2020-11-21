@@ -1,0 +1,5 @@
+(VAR x y)
+(RULES
+plus(zero,x) -> x
+plus(succ(x),y) -> succ(plus(x,y))
+)

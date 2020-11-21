@@ -1,0 +1,30 @@
+#!/bin/bash
+
+PROBLEM="$1"
+TIMEOUT="$2"
+STRATEGY="$3"
+
+export PATH=./bin:$PATH
+
+# do the proof
+java -ea -jar aprove.jar "$PROBLEM" "$TIMEOUT" "$STRATEGY" > ./tmp/output
+
+# output result it is a valid one
+aproveResult=$(head -1 ./tmp/output | egrep '^YES|^NO')
+
+if [ -z "$aproveResult" ]
+then
+    echo "MAYBE"
+else
+    # save the proof
+    tail -1 ./tmp/output > ./tmp/help
+
+    java -jar saxon9.jar ./tmp/help ./aproveToCPF2.xsl > ./proof.cpf
+
+    rm ./tmp/help
+
+    # show Yes or No
+    echo "$aproveResult"
+fi
+
+rm ./tmp/output

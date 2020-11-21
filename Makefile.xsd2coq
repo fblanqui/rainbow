@@ -1,0 +1,18 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2010-11-15
+
+MAIN := xsd2coq
+
+FILES := util error libxml xsd scc xsd_of_xml coq_of_xsd
+
+FRAGILE_FILES := xsd coq_of_xsd
+
+LIBS := xml-light/xml-light
+
+INCLUDES := -I xml-light
+
+coq_of_xsd.cmo coq_of_xsd.cmx libxml.cmo libxml.cmx: WARNINGS = -warn-error Aezk
+
+include Makefile.ocaml

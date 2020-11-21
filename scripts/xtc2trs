@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-11-10
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-xsl xtc2trs.xsl] file.xtc"; }
+
+help () {
+  cat <<EOF
+Produce a file.trs from a file.xtc using xtc2trs.xsl.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+xsl=`dirname $0`/xtc2trs.xsl
+
+while true
+do
+  case "$1" in
+  -h) usage; echo; help; exit 0;;
+  -xsl) if test $# -lt 2; then args; else xsl=$2; shift 2; fi;;
+  *) break;;
+  esac
+done
+
+if test $# -ne 1; then args; fi
+
+case $1 in
+*.xtc) base=${1%.xtc};;
+*.xml) base=${1%.xml};;
+*) echo 'error: unknown file type'; exit 1;;
+esac
+
+xsltproc $xsl $1 > $base.trs

@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-10-23
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] [-saxon saxon.jar] [-xsl aproveToRainbow.xsl] file.aprove"; }
+
+help () { aprove2prf -h | sed -e "s|aprove2prf|aprove2coq|" -e "s|file.prf|file.v|"; }
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+while true
+do
+  case "$1" in
+  -h) usage; echo; help; exit 0;;
+  -saxon) if test $# -lt 2; then args; else saxon=" -saxon $2"; shift 2; fi;;
+  -xsl) if test $# -lt 2; then args; else xsl=" -xsl $2"; shift 2; fi;;
+  *) break;;
+  esac
+done
+
+if test $# -ne 1; then args; fi
+
+case $1 in
+*.aprove) base=${1%.aprove};;
+*) echo 'error: unknown file type'; usage; exit 1
+esac
+
+aprove2prf$saxon$xsl $base.aprove && prf2coq $base.prf

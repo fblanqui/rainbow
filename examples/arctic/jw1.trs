@@ -1,0 +1,1 @@
+(VAR x)(RULES b(b(b(x))) -> a(a(a(x))) a(a(a(x))) -> b(a(b(x))))

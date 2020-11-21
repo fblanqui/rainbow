@@ -1,0 +1,348 @@
+main = WST07Heuristic
+
+# TRS Standard
+trs = TRSToQTRS:qtrs
+qtrs = Any(workOnTRS, trsbounds, trsrootlabloop)
+
+trsbounds = Timer(8000, QTRSRoofMatchBoundsTAProcessor[STAS = OSFEFS, CRS = MYCRS2, MAX_STATES_OF_A = 1000, MAX_TRANSITIONS_OF_A = 4000])
+
+trsrootlabloop = Solve(rootlab:First(Solve(workOnTRSrootlab), trsrootlabloop))
+
+workOnTRS = Maybe(Timer(10000,trsmanyrrr)):Maybe(QTRSAAECCNOC[Limit=1]):QTRSDependencyPairs:qdp
+workOnTRSrootlab = Maybe(Timer(15000,trsmanyrrr)):QTRSDependencyPairs:qdprootlab
+
+trsmanyrrr = Repeat(0, *, Any( \
+        QTRSRRR[Order = KBOPOLO], \
+        QTRSRRR[Order = POLO[Degree = 1, Range = 5, Autostrict = False, MaxSimpleDegree = 5, Engine = MINISAT]], \
+        QTRSRRR[Order = PMatroNat[Engine = MINISAT, Range = 1, Dimension = 3, Collapse = False]], \
+        QTRSRRR[Order = PPO[Engine = MINISAT[Version = 2], Quasi = True, Multiset = True, Lex = True, Prec = True, Permute = True, Xgengrc = True, Afstype = MONOTONEAFS]] \
+        ))
+
+depgraph = QDPDependencyGraph:Maybe(QDPNonSCC)
+
+qdp = Repeat(0, *, defaults) ; If[Condition=Uncurryable, Sub1="curryOrLoop", Sub2="qdpWithoutCurry"]
+
+# ===================================================== #
+# ==================== QDP NONLOOP ==================== #
+# ===================================================== #
+
+beforeNonLoop = Maybe(QDPQReduction):
+                Maybe(QDPMNOC[Reversed = True, TestDepth = 1])
+
+qdpNonLoop = beforeNonLoop:
+             QDPNonLoop[NARROWING = 0, FULLPROOF = False, MAXITERATIONS=2500]
+
+# ======================================================== #
+
+qdpWithoutCurry = Repeat(0,*,First(defaults,redPair1)) # share this part \
+       : Any(Solve(continuewithNRI), Solve(continuewithoutNRI)) # and branch afterwards
+
+redPairNRI_no1 = First(decr,redPair2,
+                     If[Condition=CONSTNARR07](basicNI),
+                     If[Condition=CONSTNARR07](advancedNI),
+	incr,redPair3)
+redPair_no1 = First(redPair2,redPair3)
+redPairNRI = First(redPair1,decr,redPair2,
+                     If[Condition=CONSTNARR07](basicNI),
+                     If[Condition=CONSTNARR07](advancedNI),
+                 incr,redPair3)
+redPair = First(redPair1,redPair2,redPair3)
+
+continuewithNRI = redPairNRI_no1 : Repeat(0,*,First(defaults,redPairNRI)) # for initial iteration do not try redPair1
+continuewithoutNRI = First(Any(redPair_no1,loopingQDP),First(qdpNonLoop,loopingQDP2)) : Repeat(0,*,First(defaults,Any(redPair,loopingQDP),First(qdpNonLoop,loopingQDP2)))
+
+basicNI = Maybe(QDPComplexConstantRemoval):
+          First(
+            Timer(1700, QDPNonInfReductionPair[InductionCounter = 2, LeftChainCounter = 1, RightChainCounter = 0, Engine=MINISAT]),
+            Timer(1700, QDPNonInfReductionPair[InductionCounter = 2, LeftChainCounter = 0, RightChainCounter = 1, Engine=MINISAT])
+          )
+
+advancedNI = If[Condition = BRANCHING,
+               Sub1 = "tupleNI",
+               Sub2 = "checkMax"
+             ]
+
+checkMax = If[Condition = SINGLERULE,
+             Sub1 = "maxNIlong",
+             Sub2 = "maxNIshort"
+           ]
+
+maxNIlong = Timer(12000,
+              Maybe(QDPComplexConstantRemoval):
+              QDPNonInfReductionPair[InductionCounter = 4, LeftChainCounter = 0, RightChainCounter = 1, Maximum=1, MaximumForSmall=2, Minimum=1, Engine=MINISAT]
+            )
+
+maxNIshort = Timer(6000,
+               Maybe(QDPComplexConstantRemoval):
+               QDPNonInfReductionPair[InductionCounter = 4, LeftChainCounter = 0, RightChainCounter = 1, Maximum=1, MaximumForSmall=2, Minimum=1, Engine=MINISAT]
+             )
+
+tupleNI = Timer(6000,
+            Maybe(QDPComplexConstantRemoval):
+            QDPNonInfReductionPair[InductionCounter =2, Maximum = 1, DegreeTuple = -2, LeftChainCounter = 2, RightChainCounter = 0, Engine=MINISAT]
+          )
+
+decr = Repeat(1,*,First( \
+                        Timer(500,QDPRewriting[Limit = 50, BeComplete = False]), \
+                        Timer(500,QDPNarrowing[Limit = 0, BeComplete = False, Positional = True]), \
+                        Timer(500,QDPInstantiation[Limit = 0]) \
+                       ) : Repeat(0,*,defaults))
+
+incr = Repeat(1,*,First( \
+                        Timer(500,QDPRewriting[Limit = 50, BeComplete = False]), \
+                        Timer(500,QDPNarrowing[Limit = 1, BeComplete = False, Positional = True]), \
+                        Timer(500,QDPInstantiation[Limit = 2]), \
+                        Timer(2000,QDPForwardInstantiation[Limit = 1]) \
+                       ) : Repeat(0,*,defaults))
+
+defaults = First( \
+                 depgraph, \
+                 Timer(500, QDPMNOC[TestDepth = 2]), \
+                 QDPUsableRules[BeComplete = True, UseApplicativeCeRules = False], \
+                 QDPQReduction
+                )
+
+
+curryOrLoop = Any(Solve(curryKing), First(loopingQDP, loopingQDP2))
+
+curryKing = QDPUncurrying : qdpWithoutLoopWithoutCurry
+qdpWithoutLoopWithoutCurry = Repeat(0, *, First(defaults, redPairNRI))
+
+qdprootlab = Repeat(0, *, First(defaults, redPairRootlab))
+
+loopingQDP = Timer(10000, QDPNonTerm[TotalLimit = 3, LeftLimit = 3, RightLimit = 3])
+loopingQDP2 = QDPNonTerm[TotalLimit = 8, LeftLimit = 8, RightLimit = 8]
+
+
+
+redPairNRI = First(redPair1,decr,redPair2,incr,redPair3)
+redPair = First(redPair1,redPair2,redPair3)
+ 
+redPair1 = Any( \
+        Timer(2000, QDPSizeChange[Subterm = True]), \
+        Timer(10000, QDPUsableRulesRP[AllowATransformation = False, Degree = 1, Range = 2, MaxSimpleDegree = 5, Engine = MINISAT]), \
+        Timer(10000, QDPMRR[Order = POLO[Degree = 1, Range = 3, Autostrict = False, MaxSimpleDegree = 10000, Engine = MINISAT]]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 3, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = NEGPOLO[Engine = MINISAT[Version = 2], Range = 2, NegConstantRange=-2, PosConstantRange = 2, NegRangeCriterion = DAMPEN, PartialDioEval = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PPO[Engine = MINISAT[Version = 2], Quasi = True, Multiset = True, Lex = True, Prec = True, Permute = True, Xgengrc = True, Afstype = FULLAFS], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = GPOLORATSIMPLE[Degree = 1, DenominatorRange = 4, NumeratorRange = 16, Heuristic = FULLRAT, OPCSolver = MBYNTOFORMULA[FixDenominator = True, Solver = SAT[SatConverter = PLAIN[UseShifts=False, UseBinaryShifts=False, UnaryMode=CIRCUIT, NewUnaryPower=True], SatBackend = MINISAT, Simplification = MAXIMUM, SimplifyAll = True, StripExponents = False]], MaxSimpleDegree = -1, StrictMode = SEARCHSTRICT]]))
+
+
+redPair2 = Any( \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 5, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 3, Dimension = 4, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 5, Degree = 1], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = SIMPLE_MIXED], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = 0, Max = 3, Dimension = 3, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -2, Max = 2, Dimension = 2, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]))
+
+redPair3 = Any( \
+        QDPSemanticLabelling[CarrierSetSize = 2, Strategy="semlab", AllowQuasi=True, Engine=SAT4J, IncrementalEngine=INCREMENTAL] : Repeat(0, *, redPair), \
+        QDPReductionPair[Order = MATRO[Engine = MINISAT, SatConverter=PLAIN[UseShifts=True, UseBinaryShifts=False, SumType=DUAL_COMB], Range=16, Denominator=4, Rational=True, Type=COLLAPSINGDPTUPLE[Size=2]]], \
+        QDPReductionPair[Order = PMatroArcticInt[Collapse=True, Engine=MINISAT, Dimension=1, Max=5, Unary=True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Collapse=True, Engine=MINISAT, Dimension=3, Max=2, Min = -1, Unary=True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Collapse=True, Engine=MINISAT, Dimension=2, Max=4, Min = -2, Unary=True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 7, Dimension = 2, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 4, Dimension = 3, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False])        
+
+
+redPairRootlab = First( \
+    Any( \
+        Timer(5000, QDPSizeChange[Subterm = True]), \
+        Timer(10000, QDPUsableRulesRP[AllowATransformation = False, Degree = 1, Range = 2, MaxSimpleDegree = 5, Engine = MINISAT]), \
+        Timer(10000, QDPMRR[Order = POLO[Degree = 1, Range = 2, Autostrict = False, MaxSimpleDegree = 10000, Engine = MINISAT]]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 2, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = NEGPOLO[Engine = MINISAT[Version = 2], Range = 2, NegConstantRange=-2, PosConstantRange = 2, NegRangeCriterion = DAMPEN, PartialDioEval = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PPO[Engine = MINISAT[Version = 2], Quasi = True, Multiset = True, Lex = True, Prec = True, Permute = True, Xgengrc = True, Afstype = FULLAFS], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]) \
+    ), \
+    decr,
+    Any( \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 5, Degree = 1], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 4, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = GPOLORATSIMPLE[Degree = 1, DenominatorRange = 4, NumeratorRange = 16, Heuristic = FULLRAT, OPCSolver = MBYNTOFORMULA[FixDenominator = True, Solver = SAT[SatConverter = PLAIN[UseShifts=False, UseBinaryShifts=False, UnaryMode=CIRCUIT, NewUnaryPower=True], SatBackend = MINISAT, Simplification = MAXIMUM, SimplifyAll = True, StripExponents = False]], MaxSimpleDegree = -1, StrictMode = SEARCHSTRICT]]),
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = 0, Max = 4, Dimension = 1, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -2, Max = 2, Dimension = 1, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False])), \
+    Any( \
+        QDPSemanticLabelling[CarrierSetSize = 2, Strategy="semlab", AllowQuasi=True, Engine=SAT4J, IncrementalEngine=INCREMENTAL] : Repeat(0, *, redPair), \
+        QDPReductionPair[Order = NEGPOLO[Engine = MINISAT[Version = 2], Range = 7, NegConstantRange=-3, PosConstantRange = 4, NegRangeCriterion = DAMPEN, PartialDioEval = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Collapse=True, Engine=MINISAT, Dimension=3, Max=2, Min = -1, Unary=True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Collapse=True, Engine=MINISAT, Dimension=2, Max=4, Min = -2, Unary=True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 4, Dimension = 3, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]))        
+
+
+
+
+semlab = RepeatS(1,*, First( \
+                            defaults, \
+                            MRR06Heuristic[AllowATransformation = False, Sub1="usableRulesRP1", Sub2="ruleRemoval1"], \
+                            Timer(7500,QDPReductionPair[Active = True, Allstrict = False, Order = POLO[Degree = 1, Range = 1, MaxSimpleDegree = 4, Engine = MINISAT], MergeMutual = True]) \
+                           ))
+ruleRemoval1 = Timer(500, QDPMRR[Order = POLO[Degree = 1, Range = 1, Autostrict = False, MaxSimpleDegree = 5, Engine = MINISAT]])
+usableRulesRP1 = Timer(600,QDPUsableRulesRP[AllowATransformation = False, Degree = 1, Range = 1, MaxSimpleDegree = 5, Engine = MINISAT])
+
+# GTRS
+gtrs = GTRSToQTRS:qtrs
+
+
+# SRS Standard
+srs = TRSToQTRS:qsrs
+qsrs = Any(First(QTRSReverse:srsbounds, srsbounds), \
+           workOnSRS, \
+           srsrootlabloop,
+           QTRSReverse:Any(workOnSRS,srsrootlabloop))
+
+srsbounds = Timer(5000, QTRSRoofMatchBoundsTAProcessor[STAS = OSFEFS, CRS = MYCRS2, MAX_STATES_OF_A = 200, MAX_TRANSITIONS_OF_A = 400])
+
+srsrootlabloop = Solve(rootlab:First(Solve(workOnSRS2), srsrootlabloop))
+
+workOnSRS = AnyDelay(10000,
+                     Solve(Maybe(srsrrr):QTRSDependencyPairs:srsdp),
+                     QTRSDependencyPairs:Maybe(defaults);Any(qdpnonloop, loopingQDP))
+workOnSRS2 = Maybe(srsrrr2):QTRSDependencyPairs:srsdp2
+
+#srsrrr = Timer(15000, srsmanyrrr)
+srsrrr = Timer(15000, Repeat(0, *, Any(QTRSRRR[Order = KBOPOLO])))
+
+#srsrrr2 = Timer(25000, srsmanyrrr)
+srsrrr2 = Timer(15000, Repeat(0, *, Any(QTRSRRR[Order = KBOPOLO])))
+        
+srsmanyrrr = Repeat(0, *, Any( \
+        QTRSRRR[Order = KBOPOLO], \
+        QTRSRRR[Order = POLO[Degree = 1, Range = 3, Autostrict = False, MaxSimpleDegree = 5, Engine = MINISAT]], \
+        QTRSRRR[Order = PMatroNat[Engine = MINISAT, Range = 1, Dimension = 3, Collapse = False]], \
+        QTRSRRR[Order = PPO[Engine = MINISAT[Version = 2], Quasi = True, Multiset = False, Lex = True, Prec = True, Permute = False, Xgengrc = True, Afstype = MONOTONEAFS]] \
+        ))
+
+srsmanyrrr2 = Repeat(0, *, Any( \
+        QTRSRRR[Order = KBOPOLO], \
+        QTRSRRR[Order = POLO[Degree = 1, Range = 2, Autostrict = False, MaxSimpleDegree = 5, Engine = MINISAT]], \
+        QTRSRRR[Order = PMatroNat[Engine = MINISAT, Range = 1, Dimension = 2, Collapse = False]]
+        ))
+
+srsdecr = Repeat(1,*,
+            First(
+              Timer(500,QDPRewriting[Limit = 50, BeComplete = False]),
+              Timer(500,QDPNarrowing[Limit = 0, BeComplete = False, Positional = True]),
+              Timer(500,QDPInstantiation[Limit = 0])
+            ):
+            Repeat(0,*,defaults)
+          )
+
+
+srsdp = Solve(Repeat(0, *, First(defaults,srsRedPair)))
+srsdp2 = Solve(Repeat(0, *, First(defaults,srsRedPair2)))
+
+srsRedPair = First( \
+    Any( \
+        Timer(2000, QDPSizeChange[Subterm = True]), \
+        Timer(10000, QDPMRR[Order = POLO[Degree = 1, Range = 3, Autostrict = False, MaxSimpleDegree = 10000, Engine = MINISAT]]), \
+        Timer(10000, QDPReductionPair[Order = NEGPOLO[Engine = MINISAT[Version = 2], Range = 2, NegConstantRange=-2, PosConstantRange = 2, NegRangeCriterion = DAMPEN, PartialDioEval = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 5, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Max = 1, Dimension = 3, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False])), \
+    srsdecr, \
+    Any( \
+        Timer(10000, QDPReductionPair[Order = PPO[Engine = MINISAT[Version = 2], Quasi = True, Multiset = False, Lex = True, Prec = True, Permute = False, Xgengrc = True, Afstype = FULLAFS], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPUsableRulesRP[AllowATransformation = False, Degree = 1, Range = 3, MaxSimpleDegree = 5, Engine = MINISAT]), \
+        Timer(10000, QDPReductionPair[Order = GPOLORATSIMPLE[Degree = 1, DenominatorRange = 4, NumeratorRange = 16, Heuristic = FULLRAT, OPCSolver = MBYNTOFORMULA[FixDenominator = True, Solver = SAT[SatConverter = PLAIN[UseShifts=False, UseBinaryShifts=False, UnaryMode=CIRCUIT, NewUnaryPower=True], SatBackend = MINISAT, Simplification = MAXIMUM, SimplifyAll = True, StripExponents = False]], MaxSimpleDegree = -1, StrictMode = SEARCHSTRICT]]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 2, Dimension = 3, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 3, Dimension = 3, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 5, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False])), \
+    Any( \
+        QDPSemanticLabelling[CarrierSetSize = 2, Strategy="semlab", AllowQuasi=False, Engine=SAT4J, IncrementalEngine=INCREMENTAL], \
+        QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 2, Degree = SIMPLE_MIXED], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = MATRO[Engine = MINISAT, SatConverter=PLAIN[UseShifts=True, UseBinaryShifts=False, SumType=DUAL_COMB], Range=16, Denominator=4, Rational=True, Type=COLLAPSINGDPTUPLE[Size=2]]], \
+        QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 6, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Max = 1, Dimension = 5, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 3, Dimension = 5, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 2, Dimension = 7, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]))
+
+srsRedPair2 = First( \
+    Any( \
+        Timer(4000, QDPSizeChange[Subterm = True]), \
+        Timer(10000, QDPReductionPair[Order = NEGPOLO[Engine = MINISAT[Version = 2], Range = 2, NegConstantRange=-2, PosConstantRange = 2, NegRangeCriterion = DAMPEN, PartialDioEval = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 1, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 5, Degree = 1, LinearMonotone = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Max = 1, Dimension = 3, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False])), \
+    srsdecr, \
+    Any( \
+        Timer(10000, QDPReductionPair[Order = PPO[Engine = MINISAT[Version = 2], Quasi = True, Multiset = False, Lex = True, Prec = True, Permute = False, Xgengrc = True, Afstype = FULLAFS], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = GPOLORATSIMPLE[Degree = 1, DenominatorRange = 4, NumeratorRange = 16, Heuristic = FULLRAT, OPCSolver = MBYNTOFORMULA[FixDenominator = True, Solver = SAT[SatConverter = PLAIN[UseShifts=False, UseBinaryShifts=False, UnaryMode=CIRCUIT, NewUnaryPower=True], SatBackend = MINISAT, Simplification = MAXIMUM, SimplifyAll = True, StripExponents = False]], MaxSimpleDegree = -1, StrictMode = SEARCHSTRICT]]), \
+        Timer(10000, QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 2, Dimension = 3, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]), \
+        Timer(10000, QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 5, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False])), \
+    Any( \
+        QDPSemanticLabelling[CarrierSetSize = 2, Strategy="semlab", AllowQuasi=False, Engine=SAT4J, IncrementalEngine=INCREMENTAL], \
+        QDPReductionPair[Order = POLO[Engine = MINISAT[Version = 2], Range = 2, Degree = SIMPLE_MIXED], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = MATRO[Engine = MINISAT, SatConverter=PLAIN[UseShifts=True, UseBinaryShifts=False, SumType=DUAL_COMB], Range=8, Denominator=2, Rational=True, Type=COLLAPSINGDPTUPLE[Size=2]]], \
+        QDPReductionPair[Order = PMatroNat[Engine = MINISAT[Version = 2], Range = 1, Dimension = 6, Collapse = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Max = 1, Dimension = 5, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False], \
+        QDPReductionPair[Order = PMatroArcticInt[Engine = MINISAT[Version = 2], Min = -1, Max = 3, Dimension = 5, Collapse = True, Unary = True], Allstrict = False, Usable = True, Active = True, ATrans = False, MergeMutual = False]))
+
+
+# root labeling can be used both for TRSs and for SRSs
+rootlab = Maybe(QTRSFlatCC):QTRSRootLabeling
+
+# relative termination is supported, too
+
+# TRS Relative
+
+rtrs = Maybe(RelTRSSCleaner) :
+       First(
+         Solve(RelTRSEmptinessCheck:WST07Heuristic),
+         Any(RelTRSLoopFinder, Solve(workOnRelTRS)))
+
+workOnRelTRS = Repeat(0, *, First( \
+    Any( \
+        Timer(10000, RelRR[Order = KBOPOLO]), \
+        Timer(10000, RelRR[Order = POLO[Engine = MINISAT, Degree = 1, Range = 1, LinearMonotone = True]]), \
+        Timer(10000, RelRR[Order = POLO[Engine = MINISAT, Degree = 1, Range = 5, LinearMonotone = True]]), \
+        Timer(10000, RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 3, Range = 1, Collapse = False]]), \
+        Timer(10000, RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 2, Range = 3, Collapse = False]]), \
+        Timer(10000, RelRR[Order = PPO[Engine = MINISAT, Quasi = True, Multiset = True, Lex = True, Prec = True, Permute = True, Xgengrc = True, Afstype = MONOTONEAFS]]) \
+       ), \
+    Any( \
+        Timer(10000, RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 4, Range = 1, Collapse = False]]), \
+        Timer(10000, RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 2, Range = 5, Collapse = False]]), \
+        Timer(10000, RelRR[Order = POLO[Engine = MINISAT, Degree = SIMPLE_MIXED, Range = 2, LinearMonotone = False]]), \
+        Timer(10000, RelRR[Order = POLO[Engine = MINISAT, Degree = SIMPLE_MIXED, Range = 1, LinearMonotone = False]]) \
+       ), \
+    Any( \
+        RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 6, Range = 1, Collapse = False]], \
+        RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 3, Range = 7, Collapse = False]], \
+        RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 4, Range = 3, Collapse = False]] \
+       ) \
+       ) \
+       )
+
+
+# SRS Relative
+
+rsrs = Maybe(RelTRSSCleaner) :
+       First(
+         Solve(RelTRSEmptinessCheck:WST07Heuristic),
+         Any(RelTRSLoopFinder, Solve(workOnRelSRS)))
+
+workOnRelSRS = Repeat(0, *, First( \
+    Any( \
+        Timer(14000, RelRR[Order = KBOPOLO]), \
+        Timer(14000, RelRR[Order = POLO[Engine = MINISAT, Degree = 1, Range = 1, LinearMonotone = True]]), \
+        Timer(14000, RelRR[Order = POLO[Engine = MINISAT, Degree = 1, Range = 5, LinearMonotone = True]]), \
+        Timer(14000, RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 3, Range = 1, Collapse = False]]), \
+        Timer(14000, RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 2, Range = 2, Collapse = False]]), \
+        Timer(14000, RelRR[Order = PPO[Engine = MINISAT, Quasi = True, Multiset = False, Lex = True, Prec = True, Permute = False, Xgengrc = True, Afstype = MONOTONEAFS]]) \
+       ), \
+    Any( \
+        RelRR[Order = POLO[Engine = MINISAT, Degree = 1, Range = 31, LinearMonotone = False]], \
+        RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 2, Range = 5, Collapse = False]], \
+        RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 6, Range = 2, Collapse = False]], \
+        RelRR[Order = PMatroNat[Engine = MINISAT, Dimension = 7, Range = 1, Collapse = False]] \
+       ) \
+       ) \
+       )
+
+
+# TRS Equational
+
+equ = ETRSToRelTRS:rtrs

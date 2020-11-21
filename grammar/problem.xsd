@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--**************************************************************************
+Rainbow, a termination proof certification tool
+See the COPYRIGHTS and LICENSE files.
+
+- Frederic Blanqui, 2006-05-31
+
+format of termination problems
+***************************************************************************-->
+
+<schema
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:rainbow.problem.format"
+  elementFormDefault="qualified"
+  xmlns:pb="urn:rainbow.problem.format">
+
+  <annotation>
+    <documentation>Rainbow format for termination problems. See the
+      COPYRIGHTS and LICENSE files. Author: Frederic
+      Blanqui.</documentation>
+  </annotation>
+
+<!--**************************************************************************
+                           Symbols, terms and words
+***************************************************************************-->
+
+<group name="identifier">
+  <restriction base="string">
+    <pattern value="[a-zA-Z][a-zA-Z0-9_']*"/>
+  </restriction>
+</group>
+
+<complexType name="symbol">
+  <choice>
+    <group ref="identifier"/>
+    <element name="hd_mark" type="pb:symbol"/>
+    <element name="int_mark" type="pb:symbol"/>
+    <element name="labelled_symbol" type="pb:labelledSymbol"/>
+  </choice>
+</complexType>
+
+<complexType name="labelledSymbol">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="label" type="pb:symbol"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="application">
+  <sequence>
+    <element name="fun" type="symbol"/>
+    <element name="arg" type="pb:term"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="term">
+  <choice>
+    <element name="var" type="nonNegativeInteger"/>
+    <element name="app" type="pb:application"/>
+  </choice>
+</complexType>
+
+<complexType name="word">
+  <sequence>
+    <element name="letter" type="pb:symbol"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                               Rewrite rules
+***************************************************************************-->
+
+<complexType name="condition">
+  <sequence>
+    <element name="lhs" type="pb:term"/>
+    <choice>
+      <element name="norm"/>
+      <element name="join"/>
+    </choice>
+    <element name="rhs" type="pb:term"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsRule">
+  <sequence>
+    <element name="lhs" type="pb:term"/>
+    <element name="rhs" type="pb:term"/>
+    <element name="if" type="pb:condition"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsRules">
+  <sequence>
+    <element name="rule" type="pb:trsRule" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsRule">
+  <sequence>
+    <element name="lhs" type="pb:word"/>
+    <element name="rhs" type="pb:word"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsRules">
+  <sequence>
+    <element name="rule" type="pb:srsRule" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                                Strategies
+***************************************************************************-->
+
+<complexType name="replacementMapping">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="index" type="positiveInteger"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="replacementMap">
+  <sequence>
+    <element name="mapping" type="pb:replacementMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsStrategy">
+  <choice>
+    <element name="none"/>
+    <element name="innermost"/>
+    <element name="outermost"/>
+    <element name="context_sensitive" type="pb:replacementMap"/>
+  </choice>
+</complexType>
+
+<complexType name="srsStrategy">
+  <choice>
+    <element name="none"/>
+    <element name="leftmost"/>
+    <element name="rightmost"/>
+  </choice>
+</complexType>
+
+<!--**************************************************************************
+                                Theories
+***************************************************************************-->
+
+<complexType name="builtin">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <choice>
+      <element name="associative"/>
+      <element name="commutative"/>
+      <element name="associative_commutative"/>
+    </choice>
+  </sequence>
+</complexType>
+
+<complexType name="equation">
+  <sequence>
+    <element name="lhs" type="pb:term"/>
+    <element name="rhs" type="pb:term"/>
+  </sequence>
+</complexType>
+
+<group name="axiom">
+  <choice>
+    <element name="builtin" type="pb:builtin"/>
+    <element name="equation" type="pb:equation"/>
+  </choice>
+</group>
+
+<complexType name="theory">
+  <sequence>
+    <group ref="axiom" minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                                Signatures
+***************************************************************************-->
+
+<complexType name="arityMapping">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="arity" type="nonNegativeInteger"/>
+  </sequence>
+</complexType>
+
+<complexType name="signature">
+  <sequence>
+    <element name="mapping" type="pb:arityMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="algebra">
+  <choice>
+    <element name="varyadic"/>
+    <element name="signature" type="pb:signature"/>
+  </choice>
+</complexType>
+
+<!--**************************************************************************
+                             Termination problems
+***************************************************************************-->
+
+<complexType name="trs">
+  <sequence>
+    <element name="algebra" type="pb:algebra"/>
+    <element name="theory" type="pb:theory"/>
+    <element name="strategy" type="pb:trsStrategy"/>
+    <element name="le_rules" type="pb:trsRules"/>
+    <element name="rules" type="pb:trsRules"/>
+  </sequence>
+</complexType>
+
+<complexType name="srs">
+  <sequence>
+    <element name="strategy" type="pb:srsStrategy"/>
+    <element name="le_rules" type="pb:srsRules"/>
+    <element name="rules" type="pb:srsRules"/>
+  </sequence>
+</complexType>
+
+<complexType name="problemKind">
+  <choice>
+    <element name="trs" type="pb:trs"/>
+    <element name="srs" type="pb:srs"/>
+  </choice>
+</complexType>
+
+<complexType name="problem">
+  <sequence>
+    <element name="problem" type="pb:problemKind"/>
+  </sequence>
+</complexType>
+
+</schema>

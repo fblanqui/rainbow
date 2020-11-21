@@ -1,0 +1,8 @@
+#!/bin/sh
+
+coqrc=/usr/local/share/rainbow/scripts/comp/coqrc
+
+base=/tmp/rainbow$$
+
+cp $1 $base.v
+coqc -dont-load-proofs -init-file $coqrc $base.v

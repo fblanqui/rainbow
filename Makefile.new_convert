@@ -1,0 +1,24 @@
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2011-03-08
+
+MAIN := new_convert
+
+# the order is important !
+FILES := util error xsd scc libxml require \
+  problem rename pb_of_xml xml_of_pb pb_of_tpdb coq_of_pb \
+  proof prf_of_xml xml_of_prf coq_of_prf \
+  xsd_of_xml coq_of_xsd \
+  xtc xtc_of_xml pb_of_xtc newcpf prf_of_newcpf pb_of_newcpf \
+  xml_of_xtc xtc_of_pb new_main
+
+FRAGILE_FILES := pb_of_xml prf_of_xml prf_of_newcpf ml_of_xsd coq_of_xsd new_main
+
+LIBS := str xml-light/xml-light tpdb-tools/tpdb-tools tmp/color
+
+INCLUDES := -I xml-light -I tpdb-tools -I tmp
+
+newcpf.cmo newcpf.cmx: WARNINGS = -warn-error Aez #Fixme add u p
+
+include Makefile.ocaml

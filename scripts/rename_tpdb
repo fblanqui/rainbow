@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2008-11-11
+
+prog=`basename $0`
+dir=`dirname $0`
+
+usage () {
+  echo "usage: $prog [-h] [-cpf|-xtc] [tpdb_dir]"
+}
+
+help () {
+  cat <<EOF
+Rename the TPDB files occuring in tpdb_dir (or . if not set)
+and its subdirectories recursively into valid Coq module names,
+and change the extension .xml to the extension .xtc.
+
+Options:
+-h   Provide this help and exit
+-cpf Rename .xml file extension into .cpf
+-xtc Rename .xml file extension into .xtc
+EOF
+}
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+-xtc) opt=" $1"; shift;;
+-cpf) opt=" $1"; shift;;
+esac
+
+tpdb_dir=${1:-.}
+
+for f in `find $tpdb_dir -name \*.trs -o -name \*.srs -o -name \*.xml`
+do
+  g=`$dir/rename_tpdb_file$opt $f`
+  if test $f != $g
+  then
+    echo mv $f $g
+    mv $f $g
+  fi
+done

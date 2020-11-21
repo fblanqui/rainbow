@@ -1,0 +1,821 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--***************************************************
+Rainbow, a termination proof certification tool
+See the COPYRIGHTS and LICENSE files.
+
+- Frederic Blanqui, 2006-05-31
+- Adam Koprowski, 2007-04-25
+- Leo Ducas, 2007-08-10
+
+format of termination certificates
+****************************************************-->
+
+<schema
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:rainbow.proof.format"
+  elementFormDefault="qualified"
+  xmlns:prf="urn:rainbow.proof.format"
+  xmlns:pb="urn:rainbow.problem.format">
+
+  <annotation>
+    <documentation>Rainbow format for termination certificates. See
+    the COPYRIGHTS and LICENSE files. Authors: Frederic Blanqui, Adam
+    Koprowski, Leo Ducas.</documentation>
+  </annotation>
+
+<!--**************************************************************************
+                        Numbers, vectors and matrices
+***************************************************************************-->
+
+<!-- Arctic numbers -->
+
+<complexType name="arcticNumber">
+  <choice>
+    <element name="minus_infinite"/>
+    <element name="finite" type="integer"/>
+  </choice>
+</complexType>
+
+<!-- Vectors -->
+
+<complexType name="natVector">
+  <sequence>
+    <element name="velem" type="nonNegativeInteger" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="arcticVector">
+  <sequence>
+    <element name="velem" type="prf:arcticNumber" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!-- Matrices -->
+
+<complexType name="natMatrix">
+  <sequence>
+    <element name="row" type="prf:natVector" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="arcticMatrix">
+  <sequence>
+    <element name="row" type="prf:arcticVector" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                             Polynomials
+***************************************************************************-->
+
+<complexType name="monomial">
+  <annotation>
+    <documentation>The number of &lt;vars&gt;'s must be equal to the
+    number of indeterminates, and this number must be the same in ALL
+    monomials composing a polynomial. The i-th indeterminate is
+    represented by the i-th &lt;var&gt;, and the argument of a
+    &lt;var&gt; is the power of the corresponding indeterminate. For
+    instance, the monomial 3x^2y is represented by:
+    &lt;coef&gt;3&lt;/coef&gt;&lt;var&gt;2&lt;/var&gt;&lt;var&gt;1&lt;/var&gt;.</documentation>
+  </annotation>
+  <sequence>
+    <element name="coef" type="nonNegativeInteger"/>
+    <element name="var" type="nonNegativeInteger"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="polynomial">
+  <annotation>
+    <documentation>A polynomial is a sequence (= sum) of
+    monomials.</documentation>
+  </annotation>
+  <sequence>
+    <element name="monomial" type="prf:monomial"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                    Polynomial and matrix interpretations
+***************************************************************************-->
+
+<!-- Polynomial interpretations -->
+
+<complexType name="polynomialMapping">
+  <annotation>
+    <documentation>The number of indeterminates (&lt;var&gt;'s) must
+    be equal to the arity of the function symbol.</documentation>
+  </annotation>
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="polynomial" type="prf:polynomial"/>
+  </sequence>
+</complexType>
+
+<complexType name="polynomialInterpretation">
+  <sequence>
+    <element name="mapping" type="prf:polynomialMapping" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!-- Matrix interpretations -->
+
+<complexType name="funMatrixInterpretation">
+  <annotation>
+    <documentation>The number of &lt;arg&gt;'s must be equal to the
+    arity of the function symbol, and the vector and the matrices must
+    have the same dimension.</documentation>
+  </annotation>
+  <sequence>
+    <element name="const" type="prf:natVector"/>
+    <element name="arg" type="prf:natMatrix"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="matrixMapping">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="mi_fun" type="prf:funMatrixInterpretation"/>
+  </sequence>
+</complexType>
+
+<complexType name="matrixInterpretation">
+  <annotation>
+    <documentation>Non-enumerated symbols get a default strongly
+    monotone interpretation.</documentation>
+  </annotation>
+  <sequence>
+    <element name="dimension" type="positiveInteger"/>
+    <element name="mi_map">
+      <complexType>
+        <sequence>
+          <element name="mapping" type="prf:matrixMapping"
+		   maxOccurs="unbounded"/>
+        </sequence>
+      </complexType>
+    </element>
+  </sequence>
+</complexType>
+
+<!-- Arctic interpretations -->
+
+<complexType name="funArcticInterpretation">
+  <annotation>
+    <documentation>The number of &lt;arg&gt;'s must be equal to the
+    arity of the function symbol, and the vector and the matrices must
+    have the same dimension.</documentation>
+  </annotation>
+  <sequence>
+    <element name="const" type="prf:arcticVector"/>
+    <element name="arg" type="prf:arcticMatrix"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="arcticMapping">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="mi_fun" type="prf:funArcticInterpretation"/>
+  </sequence>
+</complexType>
+
+<complexType name="arcticInterpretation">
+  <annotation>
+    <documentation>Non-enumerated symbols get a default strongly
+    monotone interpretation.</documentation>
+  </annotation>
+  <sequence>
+    <element name="dimension" type="positiveInteger"/>
+    <element name="mi_map">
+      <complexType>
+        <sequence>
+          <element name="mapping" type="prf:arcticMapping"
+		   maxOccurs="unbounded"/>
+        </sequence>
+      </complexType>
+    </element>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                          Arguments filterings
+***************************************************************************-->
+
+<!-- non-collapsing arguments filter defined by a boolean vector -->
+
+<group name="bool">
+  <choice>
+    <element name="true"/>
+    <element name="false"/>
+  </choice>
+</group>
+
+<complexType name="vectorBool">
+  <sequence>
+    <group ref="prf:bool" minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="argBoolMapping">
+  <annotation>
+    <documentation>For non-permutative non-collapsing arguments
+    filterings. &lt;true&gt; means that the argument is
+    preserved. &lt;false&gt; means that the argument is removed. The
+    size of the vector must be equal to the arity of the
+    symbol.</documentation>
+  </annotation>
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="bool" type="prf:vectorBool"/>
+  </sequence>
+</complexType>
+
+<complexType name="argBoolDef">
+  <annotation>
+    <documentation>Non enumerated symbols are left
+    unchanged.</documentation>
+  </annotation>
+  <sequence>
+    <element name="mapping" type="prf:argBoolMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!-- collapsing arguments filter (projections) -->
+
+<complexType name="argProjMapping">
+  <annotation>
+    <documentation>For collapsing arguments filterings. No
+    &lt;proj&gt; means no projection, and &lt;proj&gt;i&lt;/proj&gt;
+    means projection on the i-th argument counted from 0 (i must be
+    strictly smaller than the arity).</documentation>
+  </annotation>
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="proj" type="nonNegativeInteger"
+	     minOccurs="0" maxOccurs="1"/>
+  </sequence>
+</complexType>
+
+<complexType name="argProjDef">
+  <annotation>
+    <documentation>Non enumerated symbols are left
+    unchanged.</documentation>
+  </annotation>
+  <sequence>
+    <element name="mapping" type="prf:argProjMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!-- standard non-collapsing arguments filter -->
+
+<complexType name="listArg">
+  <sequence>
+    <element name="arg" type="nonNegativeInteger"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="argPermMapping">
+  <annotation>
+    <documentation>For non-collapsing argument
+    filterings. &lt;arg&gt;i&lt;/arg&gt; means the i-th argument
+    counted from 0 (i must be strictly smaller than the
+    arity).</documentation>
+  </annotation>
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="perm" type="prf:listArg"/>
+  </sequence>
+</complexType>
+
+<complexType name="argPermDef">
+  <annotation>
+    <documentation>Non enumerated symbols are left
+    unchanged.</documentation>
+  </annotation>
+  <sequence>
+    <element name="mapping" type="prf:argPermMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!-- general arguments filter -->
+
+<group name="filter">
+  <choice>
+    <element name="bool" type="prf:vectorBool"/>
+    <element name="proj" type="nonNegativeInteger"/>
+    <element name="perm" type="prf:listArg"/>
+  </choice>
+</group>
+
+<complexType name="argFilterMapping">
+  <annotation>
+    <documentation>For general argument filterings.</documentation>
+  </annotation>
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <group ref="filter" minOccurs="0" maxOccurs="1"/>
+  </sequence>
+</complexType>
+
+<complexType name="argFilterDef">
+  <annotation>
+    <documentation>Non enumerated symbols are left
+    unchanged.</documentation>
+  </annotation>
+  <sequence>
+    <element name="mapping" type="prf:argFilterMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!-- simple projections for the subterm criterion -->
+
+<complexType name="simpleProjMapping">
+  <annotation>
+    <documentation>For collapsing arguments
+    filterings. &lt;proj&gt;i&lt;/proj&gt; means projection on the
+    i-th argument counted from 0 (i must be strictly smaller than the
+    arity).</documentation>
+  </annotation>
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="proj" type="nonNegativeInteger"/>
+  </sequence>
+</complexType>
+
+<complexType name="simpleProjDef">
+  <annotation>
+    <documentation>Non enumerated symbols of arity $gt;0 are projected
+    on the first argument
+    (&lt;proj&gt;0&lt;/proj&gt;).</documentation>
+  </annotation>
+  <sequence>
+    <element name="mapping" type="prf:simpleProjMapping"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                                   RPO
+***************************************************************************-->
+
+<group name="status">
+  <choice>
+    <element name="lex"/>
+    <annotation>
+      <documentation>Lexicographic ordering from left to
+      right.</documentation>
+    </annotation>
+    <element name="mul"/>
+  </choice>
+</group>
+
+<complexType name="statusMapping">
+  <sequence>
+    <element name="fun" type="pb:symbol"/>
+    <element name="status" type="prf:status"/>
+    <element name="prec" type="integer"/>
+  </sequence>
+</complexType>
+
+<complexType name="rpo">
+  <annotation>
+    <documentation>Symbols are compared through their precedence. A
+    non-enumerated symbol gets 0 as precedence and &lt;lex&gt; as
+    status.</documentation>
+  </annotation>
+  <sequence>
+    <element name="mapping" type="prf:statusMapping"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                          Reduction orders
+***************************************************************************-->
+
+<complexType name="argBoolOrder">
+  <annotation>
+    <documentation>For non-collapsing argument filterings.</documentation>
+  </annotation>
+  <sequence>
+    <element name="def" type="prf:argBoolDef"/>
+    <element name="order" type="prf:reductionOrder"/>
+  </sequence>
+</complexType>
+
+<complexType name="argProjOrder">
+  <annotation>
+    <documentation>For argument filterings with projections
+    only.</documentation>
+  </annotation>
+  <sequence>
+    <element name="def" type="prf:argProjDef"/>
+    <element name="order" type="prf:reductionOrder"/>
+  </sequence>
+</complexType>
+
+<complexType name="argPermOrder">
+  <annotation>
+    <documentation>For argument filterings with projections
+    only.</documentation>
+  </annotation>
+  <sequence>
+    <element name="def" type="prf:argPermDef"/>
+    <element name="order" type="prf:reductionOrder"/>
+  </sequence>
+</complexType>
+
+<complexType name="argFilterOrder">
+  <sequence>
+    <element name="def" type="prf:argFilterDef"/>
+    <element name="order" type="prf:reductionOrder"/>
+  </sequence>
+</complexType>
+
+<complexType name="rpo">
+  <sequence>
+    <element name="def" type="prf:rpoDef"/>
+    <element name="order" type="prf:reductionOrder"/>
+  </sequence>
+</complexType>
+
+<complexType name="reductionOrder">
+  <choice>
+    <element name="poly_int" type="prf:polynomialInterpretation"/>
+    <element name="matrix_int" type="prf:matrixInterpretation"/>
+    <element name="arctic_int" type="prf:arcticInterpretation"/>
+    <element name="arctic_bz_int" type="prf:arcticInterpretation"/>
+    <element name="arg_bool" type="prf:argBoolOrder"/>
+    <element name="arg_proj" type="prf:argProjOrder"/>
+    <element name="arg_filter" type="prf:argFilterOrder"/>
+    <element name="rpo" type="prf:rpo"/>
+  </choice>
+</complexType>
+
+<!--**************************************************************************
+                    Dependency graph approximations
+***************************************************************************-->
+
+<complexType name="overDPGraph">
+  <choice>
+    <element name="hde">
+      <annotation>
+	<documentation>Head symbol equality.</documentation>
+      </annotation>
+    </element>
+    <element name="unif">
+      <annotation>
+	<documentation>Unification.</documentation>
+      </annotation>
+    </element>
+  </choice>
+</complexType>
+
+<!--**************************************************************************
+                           Counter-examples
+***************************************************************************-->
+
+<complexType name="position">
+  <annotation>
+    <documentation>The i-th argument of a symbol is denoted by
+    (i-1).</documentation>
+  </annotation>
+  <sequence>
+    <element name="arg" type="nonNegativeInteger"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsModStep">
+  <sequence>
+    <element name="position" type="position"/>
+    <element name="rule" type="pb:trsRule"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsModSteps">
+  <sequence>
+    <element name="step" type="trsModStep"
+	     minOccurs="1" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsStep">
+  <annotation>
+    <documentation>Put relative steps (TPDB rules "->=") and AC steps
+    in &lt;modulo&gt;. The &lt;rule&gt; element must be a strict rule
+    (TPDB rule "->").</documentation>
+  </annotation>
+  <sequence>
+    <element name="modulo" type="trsModSteps"
+	     minOccurs="0" maxOccurs="1"/>
+    <element name="position" type="position"/>
+    <element name="rule" type="pb:trsRule"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsSteps">
+  <sequence>
+    <element name="step" type="prf:trsStep"
+	     minOccurs="1" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsLoop">
+  <annotation>
+    <documentation>The &lt;modulo&gt; element is for some additional
+    relative steps at the end of q rewrite sequence.</documentation>
+  </annotation>
+  <sequence>
+    <element name="start" type="pb:term"/>
+    <element name="steps" type="prf:trsSteps"/>
+    <element name="modulo" type="prf:srsModSteps"
+	     minOccurs="0" maxOccurs="1"/>
+    <element name="position" type="prf:position"/>
+  </sequence>
+</complexType>
+
+<complexType name="trsCounterExample">
+  <choice>
+    <element name="var_cond"/>
+    <element name="loop" type="trsLoop"/>
+  </choice>
+</complexType>
+
+<complexType name="srsModStep">
+  <sequence>
+    <element name="position" type="nonNegativeInteger"/>
+    <element name="rule" type="pb:srsRule"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsModSteps">
+  <sequence>
+    <element name="step" type="srsModStep"
+	     minOccurs="1" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsStep">
+  <annotation>
+    <documentation>Put relative steps (TPDB rules "->=") and AC steps
+    in &lt;modulo&gt;. The &lt;rule&gt; element must be a strict rule
+    (TPDB rule "->").</documentation>
+  </annotation>
+  <sequence>
+    <element name="modulo" type="srsModSteps"
+	     minOccurs="0" maxOccurs="1"/>
+    <element name="position" type="nonNegativeInteger"/>
+    <element name="rule" type="pb:srsRule"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsSteps">
+  <sequence>
+    <element name="step" type="prf:srsStep"
+	     minOccurs="1" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsLoop">
+  <annotation>
+    <documentation>The &lt;modulo&gt; element is for some additional
+    relative steps at the end of q rewrite sequence.</documentation>
+  </annotation>
+  <sequence>
+    <element name="start" type="pb:word"/>
+    <element name="steps" type="prf:srsSteps"/>
+    <element name="modulo" type="prf:srsModSteps"
+	     minOccurs="0" maxOccurs="1"/>
+    <element name="position" type="prf:position"/>
+  </sequence>
+</complexType>
+
+<complexType name="srsCounterExample">
+  <choice>
+    <element name="loop" type="srsLoop"/>
+  </choice>
+</complexType>
+
+<complexType name="counterExample">
+  <choice>
+    <element name="trs_counter_example" type="trsCounterExample"/>
+    <element name="srs_counter_example" type="srsCounterExample"/>
+  </choice>
+</complexType>
+
+<!--**************************************************************************
+                             Proof kinds
+***************************************************************************-->
+
+<complexType name="mannaNess">
+  <sequence>
+    <element name="order" type="prf:reductionOrder"/>
+    <element name="proof" type="prf:proof"/>
+    <element name="usable_rules"
+	     minOccurs="0" maxOccurs="1"/>
+  </sequence>
+</complexType>
+
+<complexType name="argFilter">
+  <sequence>
+    <element name="def" type="prf:argFilterDef"/>
+    <element name="proof" type="prf:proof"/>
+  </sequence>
+</complexType>
+
+<complexType name="argProj">
+  <sequence>
+    <element name="def" type="prf:argProjDef"/>
+    <element name="proof" type="prf:proof"/>
+  </sequence>
+</complexType>
+
+<complexType name="argFilterProj">
+  <sequence>
+    <element name="def" type="prf:argFilterProjDef"/>
+    <element name="proof" type="prf:proof"/>
+  </sequence>
+</complexType>
+
+<complexType name="component">
+  <annotation>
+    <documentation>No proof means that the component is a co-SCC:
+    there is no edge between two nodes.</documentation>
+  </annotation>
+  <sequence>
+    <element name="rules" type="pb:trsRules"/>
+    <element name="proof" type="prf:proof" minOccurs="0"/>
+  </sequence>
+</complexType>
+
+<complexType name="decomp">
+  <annotation>
+    <documentation>The union of components must be EQUAL to the set of
+    DPs, and the order of components is important: it must not
+    possible to go from component i to any component j >
+    i.</documentation>
+  </annotation>
+  <sequence>
+    <element name="graph" type="prf:overDPGraph"/>
+    <element name="component" type="prf:component"
+	     minOccurs="0" maxOccurs="unbounded"/>
+  </sequence>
+</complexType>
+
+<complexType name="subtermCrit">
+  <sequence>
+    <element name="def" type="simpleProjDef"/>
+    <element name="proof" type="prf:proof"/>
+  </sequence>
+</complexType>
+
+<complexType name="proofKind">
+  <choice>
+
+    <element name="trivial">
+      <annotation>
+	<documentation>When the relation is empty.</documentation>
+      </annotation>
+    </element>
+    
+    <element name="manna_ness" type="prf:mannaNess">
+      <annotation>
+	<documentation>Manna-Ness criterion and its extension to
+        relative (top) termination: rules strictly decreasing are
+        removed.</documentation>
+      </annotation>
+    </element>
+
+    <element name="dp" type="prf:proof">
+      <annotation>
+	<documentation>Basic DP transformation without introducing
+        marked symbols: transforms a termination problem of the form
+        ->R into the termination problem ->Rinternal*->DP(R)top. The
+        set of DPs computed in CoLoR is the one with Dershowitz
+        improvement removing the DPs whose rhs is a proper subterm of
+        its lhs.</documentation>
+      </annotation>
+    </element>
+
+    <element name="mark_symbols" type="prf:proof">
+      <annotation>
+	<documentation>Transforms a termination problem of the form
+        ->Rinternal*->DP(R)top on some signature S (as obtained after
+        &lt;dp&gt;) into one of the form ->R#*->DP(R)#top on the
+        signature {hd_symb f|f in S} U {int_symb f|f in S}. Hence, in
+        contrast with what is usually done, even constructors are
+        marked.</documentation>
+      </annotation>
+    </element>
+
+    <element name="decomp" type="prf:decomp">
+      <annotation>
+	<documentation>Graph decomposition.</documentation>
+      </annotation>
+    </element>
+
+    <element name="arg_bool" type="prf:argBool">
+      <annotation>
+	<documentation>For non-permutative non-collapsing arguments
+	filterings.</documentation>
+      </annotation>
+    </element>
+
+    <element name="arg_proj" type="prf:argProj">
+      <annotation>
+	<documentation>For collapsing arguments
+	filterings.</documentation>
+      </annotation>
+    </element>
+
+    <element name="arg_perm" type="prf:argProj">
+      <annotation>
+	<documentation>For permutative non-collapsing arguments
+	filterings.</documentation>
+      </annotation>
+    </element>
+
+    <element name="arg_filter" type="prf:argFilter">
+      <annotation>
+	<documentation>For general arguments filterings.</documentation>
+      </annotation>
+    </element>
+
+    <element name="flat_cc" type="prf:proof">
+      <annotation>
+	<documentation>Flat context closure
+	  transformation.</documentation>
+      </annotation>
+    </element>
+
+    <element name="root_lab" type="prf:proof">
+      <annotation>
+	<documentation>Root labelling.</documentation>
+      </annotation>
+    </element>
+
+    <element name="unlab" type="prf:proof">
+      <annotation>
+	<documentation>Unlabelling.</documentation>
+      </annotation>
+    </element>
+
+    <element name="as_trs" type="prf:proof">
+      <annotation>
+	<documentation>Transforms an SRS into a unary TRS.</documentation>
+      </annotation>
+    </element>
+
+    <element name="as_srs" type="prf:proof">
+      <annotation>
+	<documentation>Transforms a unary TRS into an SRS.</documentation>
+      </annotation>
+    </element>
+
+    <element name="srs_rev" type="prf:proof">
+      <annotation>
+	<documentation>SRS or unary TRS reversal.</documentation>
+      </annotation>
+    </element>
+
+    <element name="trs_rev" type="prf:proof">
+      <annotation>
+	<documentation>SRS or unary TRS reversal.</documentation>
+      </annotation>
+    </element>
+
+    <element name="subterm_crit" type="prf:subtermCrit">
+      <annotation>
+	<documentation>subterm criterion.</documentation>
+      </annotation>
+    </element>
+
+  </choice>
+</complexType>
+
+<complexType name="proof">
+  <sequence>
+    <element name="proof" type="prf:proofKind"/>
+  </sequence>
+</complexType>
+
+<!--**************************************************************************
+                             Certificates
+***************************************************************************-->
+
+<complexType name="certificate">
+  <choice>
+    <element name="proof" type="prf:proofKind"/>
+    <element name="counter_example" type="prf:counterExample"/>
+  </choice>
+</complexType>
+
+</schema>

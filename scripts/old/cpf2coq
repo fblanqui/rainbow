@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# Rainbow, a termination proof certification tool
+# See the COPYRIGHTS and LICENSE files.
+#
+# - Frederic Blanqui, 2009-02-10
+
+prog=`basename $0`
+
+usage () { echo "usage: $prog [-h] file.cpf"; }
+
+help () {
+  cat <<EOF
+Produce a file.v from a file.cpf. Requires that file.pb exists.
+
+Options:
+-h Provide this help and exit
+EOF
+}
+
+args () { echo 'error: wrong number of arguments'; usage; exit 1; }
+
+case "$1" in
+-h) usage; echo; help; exit 0;;
+esac
+
+if test $# -ne 1; then args; fi
+
+case $1 in
+*.cpf) base=${1%.cpf};;
+*) echo 'error: unknown file type'; exit 1;;
+esac
+
+if test ! -f $base.pb; then echo "error: no file $base.pb"; exit 1; fi
+if test ! -f $base.cpf; then echo "error: no file $base.cpf"; exit 1; fi
+
+`dirname $0`/../bin/cpf2coq $base.pb $base.cpf > $base.v
+status=$?
+
+case $status in
+0) rm -f $base.bug;;
+2) rm -f $base.v $base.bug;;
+*) rm -f $base.v; touch $base.bug; echo ERROR $status;;
+esac
+
+exit $status
