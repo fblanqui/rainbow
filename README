@@ -1,14 +1,12 @@
 # Rainbow, a termination proof certification tool
 # See the COPYRIGHTS and LICENSE files.
 
-Rainbow is available on the CoLoR web page http://color.inria.fr/.
-
 The aim of Rainbow is to check the correctness of termination
 certificates for various existing formats. The certification is
 currently done by generating a Coq file based on the CoLoR
 library. Coq is a powerful proof assistant and checker (see
 http://coq.inria.fr) and CoLoR is a Coq library on rewriting and
-termination (see http://color.inria.fr).
+termination (see https://github.com/fblanqui/color).
 
 LICENSE: this file describes the license governing this tool.
 COPYRIGHTS: this file describes the copyrights holders.
